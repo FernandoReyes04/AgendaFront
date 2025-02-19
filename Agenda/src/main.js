@@ -1,8 +1,10 @@
-import './assets/main.css'
+import { createApp } from 'vue';
+import App from './App.vue';
+import VCalendar from 'v-calendar';
+import 'v-calendar/style.css';
 
-import { createApp } from 'vue'
-import App from './App.vue'
+const app = createApp(App);
 
+app.use(VCalendar, {}); // Configura v-calendar globalmente
 
-
-createApp(App).mount('#app')
+app.mount('#app');
