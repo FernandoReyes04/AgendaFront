@@ -1,56 +1,63 @@
 <template>
-  <div class="home-container">
+  <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+  <div v-else class="home-container">
     <Header />
     <div class="button-container">
       <div class="button-group">
         <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
         <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
-        <button class="btn btn-outline-secondary btn-lg" @click="mostrarCalendarioModal">Mostrar Calendario</button>
-        <button class="btn btn-outline-primary btn-lg" @click="toggleContactos">Mis Contactos</button>
-        <button class="btn btn-outline-success btn-lg" @click="toggleEventos">Mis Eventos</button>
+        <button class="btn btn-info btn-lg" @click="mostrarRecordatorioModal">Añadir Recordatorio</button>
+        <button class="btn btn-outline-primary btn-lg" @click="mostrarContactosModal">Mis Contactos</button>
+        <button class="btn btn-outline-success btn-lg" @click="mostrarEventosModal">Mis Eventos</button>
       </div>
     </div>
 
     <CalendarioInteractivo :events="eventos" />
 
     <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
-    <FormularioEventoComponente v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" />
-    <Calendario v-if="mostrarCalendario" ref="calendarioRef" @cerrar="cerrarCalendario" />
-    <Contactos v-if="mostrarContactos" />
-    <Eventos v-if="mostrarEventos" />
+    <FormularioEvento v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" @guardar="guardarEvento" />
+    <RecordatorioModal v-if="mostrarRecordatorio" ref="recordatorioRef" @cerrar="cerrarRecordatorio" @guardar="guardarRecordatorio" />
+    <Contactos v-if="mostrarContactos" ref="contactosRef" @cerrar="cerrarContactosModal"/>
+    <Eventos v-if="mostrarEventos" ref="eventosRef" @cerrar="cerrarEventosModal"/>
   </div>
 </template>
 
 <script>
+import Login from './Login.vue';
 import Header from './Header.vue';
 import FormularioContacto from './FormularioContacto.vue';
 import Contactos from './Contactos.vue';
 import Eventos from './Eventos.vue';
-import FormularioEventoComponente from './FormularioEventoComponente.vue';
-import Calendario from './Calendario.vue';
+import FormularioEvento from './FormularioEvento.vue';
 import CalendarioInteractivo from './CalendarioInteractivo.vue';
+import RecordatorioModal from './RecordatorioModal.vue';
 
 export default {
   components: {
+    Login,
     Header,
     FormularioContacto,
     Contactos,
     Eventos,
-    FormularioEventoComponente,
-    Calendario,
-    CalendarioInteractivo
+    FormularioEvento,
+    CalendarioInteractivo,
+    RecordatorioModal
   },
   data() {
     return {
+      isLoggedIn: false,
       eventos: [],
       mostrarContactos: false,
       mostrarEventos: false,
       mostrarModalContacto: false,
       mostrarModalEvento: false,
-      mostrarCalendario: false
+      mostrarRecordatorio: false
     };
   },
   methods: {
+    handleLoginSuccess() {
+      this.isLoggedIn = true;
+    },
     mostrarFormularioContactoModal() {
       this.mostrarModalContacto = true;
       this.$nextTick(() => {
@@ -63,29 +70,76 @@ export default {
         this.$refs.formularioEventoRef.showModal();
       });
     },
-    mostrarCalendarioModal() {
-      this.mostrarCalendario = true;
+    mostrarRecordatorioModal() {
+      this.mostrarRecordatorio = true;
       this.$nextTick(() => {
-        this.$refs.calendarioRef.showModal();
+        this.$refs.recordatorioRef.showModal();
+      });
+    },
+    mostrarContactosModal() {
+      this.mostrarContactos = true;
+      this.$nextTick(() => {
+        this.$refs.contactosRef.showModal();
+      });
+    },
+    mostrarEventosModal() {
+      this.mostrarEventos = true;
+      this.$nextTick(() => {
+        this.$refs.eventosRef.showModal();
       });
     },
     cerrarModalContacto() {
       this.mostrarModalContacto = false;
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('contactoModal');
+        if (modalElement) {
+          modalElement.remove();
+        }
+      });
     },
     cerrarModalEvento() {
       this.mostrarModalEvento = false;
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('eventoModal');
+        if (modalElement) {
+          modalElement.remove();
+        }
+      });
     },
-    cerrarCalendario() {
-      this.mostrarCalendario = false;
+    cerrarRecordatorio() {
+      this.mostrarRecordatorio = false;
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('recordatorioModal');
+        if (modalElement) {
+          modalElement.remove();
+        }
+      });
     },
-    toggleContactos() {
-      this.mostrarContactos = !this.mostrarContactos;
-      this.mostrarEventos = false;
-    },
-    toggleEventos() {
-      this.mostrarEventos = !this.mostrarEventos;
+    cerrarContactosModal() {
       this.mostrarContactos = false;
-    }
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('contactosModal');
+        if (modalElement) {
+          modalElement.remove();
+        }
+      });
+    },
+    cerrarEventosModal() {
+      this.mostrarEventos = false;
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('eventosModal');
+        if (modalElement) {
+          modalElement.remove();
+        }
+      });
+    },
+    guardarRecordatorio(recordatorio) {
+      console.log('Recordatorio guardado:', recordatorio);
+    },
+    guardarEvento(evento) {
+      this.eventos.push(evento);
+      this.cerrarModalEvento();
+    },
   },
 };
 </script>
@@ -130,34 +184,34 @@ export default {
 .calendar-container {
   margin-top: 20px;
   width: 95%;
-  max-width: 800px;
-  height: 60vh;
+  max-width: 1200px;
+  height: 80vh;
   overflow: hidden;
 }
 
 /* Paleta de colores azules */
 .btn-primary {
-  background-color: #4728fe; /* color3 */
+  background-color: #4728fe;
   border-color: #4728fe;
 }
 
 .btn-primary:hover {
-  background-color: #633afe; /* color4 */
+  background-color: #633afe;
   border-color: #633afe;
 }
 
 .btn-success {
-  background-color: #804cff; /* color5 */
+  background-color: #804cff;
   border-color: #804cff;
 }
 
 .btn-success:hover {
-  background-color: #633afe; /* color4 */
+  background-color: #633afe;
   border-color: #633afe;
 }
 
 .btn-outline-primary {
-  color: #4728fe; /* color3 */
+  color: #4728fe;
   border-color: #4728fe;
 }
 
@@ -167,12 +221,22 @@ export default {
 }
 
 .btn-outline-success {
-  color: #804cff; /* color5 */
+  color: #804cff;
   border-color: #804cff;
 }
 
 .btn-outline-success:hover {
   background-color: #e0e0e0;
   border-color: #804cff;
+}
+
+.btn-info {
+  background-color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-info:hover {
+  background-color: #3dd5f3;
+  border-color: #3dd5f3;
 }
 </style>

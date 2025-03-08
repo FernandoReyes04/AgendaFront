@@ -1,38 +1,46 @@
 <template>
-  <div class="eventos-container">
-    <h2>Eventos</h2>
-    <button @click="mostrarFormularioEvento = true">Agregar Evento</button>
-
-    <FormularioEvento
-      v-if="mostrarFormularioEvento"
-      @guardar="guardarEvento"
-      @cerrar="mostrarFormularioEvento = false"
-    />
-
-    <div class="calendar-container">
-      <v-calendar is-expanded :events="eventos" />
+  <div class="modal fade" id="eventosModal" tabindex="-1" aria-labelledby="eventosModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventosModalLabel">Mis Eventos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click="$emit('cerrar')"></button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li v-for="evento in eventos" :key="evento.id">
+              {{ evento.nombre }} - {{ evento.fecha }}
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="$emit('cerrar')">Cerrar</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import FormularioEvento from './FormularioEvento.vue';
+import { Modal } from 'bootstrap';
 
 export default {
-  components: {
-    FormularioEvento
-  },
   data() {
     return {
-      eventos: [],
-      mostrarFormularioEvento: false
+      eventos: [
+        { id: 1, nombre: 'Raulfest', fecha: '2025-04-05T12:00' },
+        { id: 2, nombre: 'rifa de negros', fecha: '2025-11-15T18:00' }
+      ]
     };
   },
   methods: {
-    guardarEvento(evento) {
-      this.eventos.push(evento);
-      this.mostrarFormularioEvento = false;
+    showModal() {
+      const modal = new Modal(document.getElementById('eventosModal'));
+      modal.show();
     }
+  },
+  mounted() {
+    this.showModal();
   }
 };
 </script>

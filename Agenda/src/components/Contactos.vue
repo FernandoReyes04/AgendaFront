@@ -1,62 +1,46 @@
 <template>
-    <div class="contactos-container">
-      <h2>Gestión de Contactos</h2>
-      <button @click="mostrarFormularioContacto = true">Agregar Contacto</button>
-  
-      <FormularioContacto
-        v-if="mostrarFormularioContacto"
-        :contacto="contactoSeleccionado"
-        @guardar="guardarContacto"
-        @cerrar="mostrarFormularioContacto = false"
-      />
-  
-      <ul>
-        <li v-for="contacto in contactos" :key="contacto.id">
-          {{ contacto.nombre }} - {{ contacto.correo }} - {{ contacto.telefono }}
-          <button @click="editarContacto(contacto)">Editar</button>
-          <button @click="eliminarContacto(contacto)">Eliminar</button>
-        </li>
-      </ul>
+  <div class="modal fade" id="contactosModal" tabindex="-1" aria-labelledby="contactosModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="contactosModalLabel">Mis Contactos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click="$emit('cerrar')"></button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li v-for="contacto in contactos" :key="contacto.id">
+              {{ contacto.nombre }} - {{ contacto.telefono }}
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="$emit('cerrar')">Cerrar</button>
+        </div>
+      </div>
     </div>
-  </template>
-  
-  <script>
-  import FormularioContacto from './FormularioContacto.vue';
-  
-  export default {
-    components: {
-      FormularioContacto
-    },
-    data() {
-      return {
-        contactos: [],
-        contactoSeleccionado: null,
-        mostrarFormularioContacto: false
-      };
-    },
-    methods: {
-      guardarContacto(contacto) {
-        if (contacto.id) {
-          // Actualizar contacto existente
-          const index = this.contactos.findIndex(c => c.id === contacto.id);
-          if (index !== -1) {
-            this.contactos.splice(index, 1, contacto);
-          }
-        } else {
-          // Crear nuevo contacto
-          contacto.id = Date.now(); // Generar ID único
-          this.contactos.push(contacto);
-        }
-        this.mostrarFormularioContacto = false;
-        this.contactoSeleccionado = null;
-      },
-      editarContacto(contacto) {
-        this.contactoSeleccionado = { ...contacto }; // Crear copia para editar
-        this.mostrarFormularioContacto = true;
-      },
-      eliminarContacto(contacto) {
-        this.contactos = this.contactos.filter(c => c.id !== contacto.id);
-      }
+  </div>
+</template>
+
+<script>
+import { Modal } from 'bootstrap';
+
+export default {
+  data() {
+    return {
+      contactos: [
+        { id: 1, nombre: 'fernando reyews', telefono: '123-456-7890' },
+        { id: 2, nombre: 'LuisAlberGei', telefono: '987-654-3210' }
+      ]
+    };
+  },
+  methods: {
+    showModal() {
+      const modal = new Modal(document.getElementById('contactosModal'));
+      modal.show();
     }
-  };
-  </script>
+  },
+  mounted() {
+    this.showModal();
+  }
+};
+</script>
