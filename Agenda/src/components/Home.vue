@@ -1,24 +1,28 @@
 <template>
-  <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
-  <div v-else class="home-container">
-    <Header />
-    <div class="button-container">
-      <div class="button-group">
-        <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
-        <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
-        <button class="btn btn-info btn-lg" @click="mostrarRecordatorioModal">Añadir Recordatorio</button>
-        <button class="btn btn-outline-primary btn-lg" @click="mostrarContactosModal">Mis Contactos</button>
-        <button class="btn btn-outline-success btn-lg" @click="mostrarEventosModal">Mis Eventos</button>
+  <div class="home-container">
+    <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+    <div v-else class="home-container">
+      <Header />
+      <div class="button-container">
+        <div class="button-group">
+          <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
+          <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
+          <button class="btn btn-info btn-lg" @click="mostrarRecordatorioModal">Añadir Recordatorio</button>
+          <button class="btn btn-outline-primary btn-lg" @click="mostrarContactosModal">Mis Contactos</button>
+          <button class="btn btn-outline-success btn-lg" @click="mostrarEventosModal">Mis Eventos</button>
+          <button class="btn btn-outline-info btn-lg" @click="mostrarRecordatoriosModal">Mis Recordatorios</button>
+        </div>
       </div>
+
+      <CalendarioInteractivo :events="eventos" />
+
+      <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
+      <FormularioEvento v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" @guardar="guardarEvento" />
+      <RecordatorioModal v-if="mostrarRecordatorio" ref="recordatorioRef" @cerrar="cerrarRecordatorio" @guardar="guardarRecordatorio" />
+      <Contactos v-if="mostrarContactos" ref="contactosRef" @cerrar="cerrarContactosModal" />
+      <Eventos v-if="mostrarEventos" ref="eventosRef" @cerrar="cerrarEventosModal" />
+      <Recordatorios v-if="mostrarRecordatorios" :recordatorios="misRecordatorios" @cerrar="cerrarRecordatoriosModal" />
     </div>
-
-    <CalendarioInteractivo :events="eventos" />
-
-    <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
-    <FormularioEvento v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" @guardar="guardarEvento" />
-    <RecordatorioModal v-if="mostrarRecordatorio" ref="recordatorioRef" @cerrar="cerrarRecordatorio" @guardar="guardarRecordatorio" />
-    <Contactos v-if="mostrarContactos" ref="contactosRef" @cerrar="cerrarContactosModal"/>
-    <Eventos v-if="mostrarEventos" ref="eventosRef" @cerrar="cerrarEventosModal"/>
   </div>
 </template>
 
@@ -31,6 +35,7 @@ import Eventos from './Eventos.vue';
 import FormularioEvento from './FormularioEvento.vue';
 import CalendarioInteractivo from './CalendarioInteractivo.vue';
 import RecordatorioModal from './RecordatorioModal.vue';
+import Recordatorios from './Recordatorios.vue';
 
 export default {
   components: {
@@ -41,7 +46,8 @@ export default {
     Eventos,
     FormularioEvento,
     CalendarioInteractivo,
-    RecordatorioModal
+    RecordatorioModal,
+    Recordatorios
   },
   data() {
     return {
@@ -51,7 +57,12 @@ export default {
       mostrarEventos: false,
       mostrarModalContacto: false,
       mostrarModalEvento: false,
-      mostrarRecordatorio: false
+      mostrarRecordatorio: false,
+      mostrarRecordatorios: false,
+      misRecordatorios: [ 
+        { titulo: 'Recordatorio ', descripcion: 'Descripcion' },
+        { titulo: 'REcordatorio ', descripcion: 'Descripcion' }
+      ]
     };
   },
   methods: {
@@ -60,78 +71,39 @@ export default {
     },
     mostrarFormularioContactoModal() {
       this.mostrarModalContacto = true;
-      this.$nextTick(() => {
-        this.$refs.formularioContactoRef.showModal();
-      });
     },
     mostrarFormularioEventoModal() {
       this.mostrarModalEvento = true;
-      this.$nextTick(() => {
-        this.$refs.formularioEventoRef.showModal();
-      });
     },
     mostrarRecordatorioModal() {
       this.mostrarRecordatorio = true;
-      this.$nextTick(() => {
-        this.$refs.recordatorioRef.showModal();
-      });
     },
     mostrarContactosModal() {
       this.mostrarContactos = true;
-      this.$nextTick(() => {
-        this.$refs.contactosRef.showModal();
-      });
     },
     mostrarEventosModal() {
       this.mostrarEventos = true;
-      this.$nextTick(() => {
-        this.$refs.eventosRef.showModal();
-      });
+    },
+    mostrarRecordatoriosModal() {
+      this.mostrarRecordatorios = true;
+    },
+    cerrarRecordatoriosModal() {
+      this.mostrarRecordatorios = false;
     },
     cerrarModalContacto() {
       this.mostrarModalContacto = false;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById('contactoModal');
-        if (modalElement) {
-          modalElement.remove();
-        }
-      });
     },
     cerrarModalEvento() {
       this.mostrarModalEvento = false;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById('eventoModal');
-        if (modalElement) {
-          modalElement.remove();
-        }
-      });
     },
     cerrarRecordatorio() {
       this.mostrarRecordatorio = false;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById('recordatorioModal');
-        if (modalElement) {
-          modalElement.remove();
-        }
-      });
     },
     cerrarContactosModal() {
       this.mostrarContactos = false;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById('contactosModal');
-        if (modalElement) {
-          modalElement.remove();
-        }
-      });
     },
     cerrarEventosModal() {
       this.mostrarEventos = false;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById('eventosModal');
-        if (modalElement) {
-          modalElement.remove();
-        }
-      });
     },
     guardarRecordatorio(recordatorio) {
       console.log('Recordatorio guardado:', recordatorio);
@@ -153,6 +125,7 @@ export default {
   min-height: 100vh;
   width: 100%;
   padding-top: 60px;
+  background-color: white;
 }
 
 .button-container {

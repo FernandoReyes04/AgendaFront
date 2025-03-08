@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="eventosModalLabel">Mis Eventos</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click="$emit('cerrar')"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button> 
         </div>
         <div class="modal-body">
           <ul>
@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       eventos: [
-        { id: 1, nombre: 'Raulfest', fecha: '2025-04-05T12:00' },
+        { id: 1, nombre: 'raulfest', fecha: '2025-10-27T10:00' },
         { id: 2, nombre: 'rifa de negros', fecha: '2025-11-15T18:00' }
       ]
     };

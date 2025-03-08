@@ -2,8 +2,15 @@
     background: linear-gradient(to right, #0e03fc, #804cff); /* Gradiente de color1 a color5 */
   }
   .header {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra más sutil */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
   }
   .title {
-    font-family: 'Nombre de la Fuente', sans-serif; /* Reemplaza 'Nombre de la Fuente' */
+    font-family: 'Nombre de la Fuente', sans-serif; 
   }
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: white; 
+}

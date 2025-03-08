@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="contactosModalLabel">Mis Contactos</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click="$emit('cerrar')"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button> 
         </div>
         <div class="modal-body">
           <ul>
@@ -28,8 +28,8 @@ export default {
   data() {
     return {
       contactos: [
-        { id: 1, nombre: 'fernando reyews', telefono: '123-456-7890' },
-        { id: 2, nombre: 'LuisAlberGei', telefono: '987-654-3210' }
+        { id: 1, nombre: 'fernando reyes', telefono: '123-456-7890' },
+        { id: 2, nombre: 'justino', telefono: '987-654-3210' }
       ]
     };
   },
