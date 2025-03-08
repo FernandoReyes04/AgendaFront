@@ -1,25 +1,22 @@
 <template>
-  <div class="home-container" @click="cerrarTodo">
+  <div class="home-container">
     <Header />
-    <div class="button-group">
-      <button @click="toggleFormulario">Agregar Contacto +</button>
-      <button @click="toggleCalendarioRecordatorio">Añadir Recordatorio +</button>
-      <button @click="toggleFormularioEvento">Añadir Evento +</button> <--- Nuevo botón
-      <button @click="toggleContactos">Mis Contactos</button> <--- Nuevo botón
-      <button>Mis Recordatorios</button>
-      <button @click="toggleEventos">Mis Eventos</button> <--- Nuevo botón
-    </div>
-
-    <FormularioContacto v-if="mostrarFormulario" />
-
-    <div v-if="mostrarCalendario || mostrarCalendarioRecordatorio">
-      <div class="calendar-container">
-        <v-calendar is-expanded :events="eventos" />
+    <div class="button-container">
+      <div class="button-group">
+        <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
+        <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
+        <button class="btn btn-outline-secondary btn-lg" @click="mostrarCalendarioModal">Mostrar Calendario</button>
+        <button class="btn btn-outline-primary btn-lg" @click="toggleContactos">Mis Contactos</button>
+        <button class="btn btn-outline-success btn-lg" @click="toggleEventos">Mis Eventos</button>
       </div>
     </div>
 
+    <CalendarioInteractivo :events="eventos" />
+
+    <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
+    <FormularioEventoComponente v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" />
+    <Calendario v-if="mostrarCalendario" ref="calendarioRef" @cerrar="cerrarCalendario" />
     <Contactos v-if="mostrarContactos" />
-    <FormularioEventoComponente v-if="mostrarFormularioEvento" /> <--- Nuevo componente
     <Eventos v-if="mostrarEventos" />
   </div>
 </template>
@@ -29,7 +26,9 @@ import Header from './Header.vue';
 import FormularioContacto from './FormularioContacto.vue';
 import Contactos from './Contactos.vue';
 import Eventos from './Eventos.vue';
-import FormularioEventoComponente from './FormularioEventoComponente.vue'; // Importa el nuevo componente
+import FormularioEventoComponente from './FormularioEventoComponente.vue';
+import Calendario from './Calendario.vue';
+import CalendarioInteractivo from './CalendarioInteractivo.vue';
 
 export default {
   components: {
@@ -37,124 +36,143 @@ export default {
     FormularioContacto,
     Contactos,
     Eventos,
-    FormularioEventoComponente // Registra el nuevo componente
+    FormularioEventoComponente,
+    Calendario,
+    CalendarioInteractivo
   },
   data() {
     return {
-      mostrarFormulario: false,
-      mostrarCalendario: false,
-      mostrarCalendarioRecordatorio: false,
+      eventos: [],
       mostrarContactos: false,
       mostrarEventos: false,
-      mostrarFormularioEvento: false // Nueva propiedad
+      mostrarModalContacto: false,
+      mostrarModalEvento: false,
+      mostrarCalendario: false
     };
   },
   methods: {
-    toggleFormulario() {
-      this.mostrarFormulario = !this.mostrarFormulario;
-      this.mostrarCalendario = false;
-      this.mostrarCalendarioRecordatorio = false;
-      this.mostrarContactos = false;
-      this.mostrarEventos = false;
-      this.mostrarFormularioEvento = false;
+    mostrarFormularioContactoModal() {
+      this.mostrarModalContacto = true;
+      this.$nextTick(() => {
+        this.$refs.formularioContactoRef.showModal();
+      });
     },
-    toggleCalendario() {
-      this.mostrarCalendario = !this.mostrarCalendario;
-      this.mostrarFormulario = false;
-      this.mostrarCalendarioRecordatorio = false;
-      this.mostrarContactos = false;
-      this.mostrarEventos = false;
-      this.mostrarFormularioEvento = false;
+    mostrarFormularioEventoModal() {
+      this.mostrarModalEvento = true;
+      this.$nextTick(() => {
+        this.$refs.formularioEventoRef.showModal();
+      });
     },
-    toggleCalendarioRecordatorio() {
-      this.mostrarCalendarioRecordatorio = !this.mostrarCalendarioRecordatorio;
-      this.mostrarFormulario = false;
+    mostrarCalendarioModal() {
+      this.mostrarCalendario = true;
+      this.$nextTick(() => {
+        this.$refs.calendarioRef.showModal();
+      });
+    },
+    cerrarModalContacto() {
+      this.mostrarModalContacto = false;
+    },
+    cerrarModalEvento() {
+      this.mostrarModalEvento = false;
+    },
+    cerrarCalendario() {
       this.mostrarCalendario = false;
-      this.mostrarContactos = false;
-      this.mostrarEventos = false;
-      this.mostrarFormularioEvento = false;
     },
     toggleContactos() {
       this.mostrarContactos = !this.mostrarContactos;
-      this.mostrarFormulario = false;
-      this.mostrarCalendario = false;
-      this.mostrarCalendarioRecordatorio = false;
       this.mostrarEventos = false;
-      this.mostrarFormularioEvento = false;
     },
     toggleEventos() {
       this.mostrarEventos = !this.mostrarEventos;
-      this.mostrarFormulario = false;
-      this.mostrarCalendario = false;
-      this.mostrarCalendarioRecordatorio = false;
       this.mostrarContactos = false;
-      this.mostrarFormularioEvento = false;
-    },
-    toggleFormularioEvento() { // Nueva función
-      this.mostrarFormularioEvento = !this.mostrarFormularioEvento;
-      this.mostrarFormulario = false;
-      this.mostrarCalendario = false;
-      this.mostrarCalendarioRecordatorio = false;
-      this.mostrarContactos = false;
-      this.mostrarEventos = false;
-    },
-    cerrarTodo(event) {
-      if (!event.target.closest('.formulario-contacto') && !event.target.closest('.calendar-container') && !event.target.closest('.button-group')) {
-        this.mostrarFormulario = false;
-        this.mostrarCalendario = false;
-        this.mostrarCalendarioRecordatorio = false;
-        this.mostrarContactos = false;
-        this.mostrarEventos = false;
-        this.mostrarFormularioEvento = false;
-      }
     }
   },
 };
 </script>
+
 <style scoped>
-/* Estilos para el contenedor principal */
 .home-container {
   display: flex;
   flex-direction: column;
-  align-items: left; /* Alinea los elementos a la izquierda */
-  justify-content: flex-start; /* Alinea el contenido al inicio del contenedor */
-  height: 100vh; /* Ocupa toda la altura de la pantalla */
-  width: 100%; /* Ocupa todo el ancho de la pantalla */
-  padding-top: 60px; /* Espacio superior para evitar superposición con el header */
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  padding-top: 60px;
 }
 
-/* Estilos para el grupo de botones */
-.button-group {
+.button-container {
+  width: 100%;
   display: flex;
-  justify-content: left;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
   margin-top: 20px;
 }
 
-/* Estilos para los botones (MODIFICADOS) */
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
 .button-group button {
-  padding: 8px 16px; /* Padding reducido */
-  font-size: 14px; /* Tamaño de fuente reducido (opcional) */
-  border: none;
-  border-radius: 5px; /* Radio de borde ajustado (opcional) */
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s;
-  width: auto; /* Ajusta el ancho automáticamente */
-  white-space: nowrap; /* Evita que el texto se corte */
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .button-group button:hover {
-  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .calendar-container {
-  margin-top: 20px; /* Espacio debajo del header */
-  width: 90%;
-  max-width: 400px; /* Reducimos el tamaño */
-  height: 25vh; /* Ocupa un cuarto de la pantalla */
-  overflow: hidden; /* Evita que el contenido se expanda demasiado */
+  margin-top: 20px;
+  width: 95%;
+  max-width: 800px;
+  height: 60vh;
+  overflow: hidden;
+}
+
+/* Paleta de colores azules */
+.btn-primary {
+  background-color: #4728fe; /* color3 */
+  border-color: #4728fe;
+}
+
+.btn-primary:hover {
+  background-color: #633afe; /* color4 */
+  border-color: #633afe;
+}
+
+.btn-success {
+  background-color: #804cff; /* color5 */
+  border-color: #804cff;
+}
+
+.btn-success:hover {
+  background-color: #633afe; /* color4 */
+  border-color: #633afe;
+}
+
+.btn-outline-primary {
+  color: #4728fe; /* color3 */
+  border-color: #4728fe;
+}
+
+.btn-outline-primary:hover {
+  background-color: #e0e0e0;
+  border-color: #4728fe;
+}
+
+.btn-outline-success {
+  color: #804cff; /* color5 */
+  border-color: #804cff;
+}
+
+.btn-outline-success:hover {
+  background-color: #e0e0e0;
+  border-color: #804cff;
 }
 </style>
