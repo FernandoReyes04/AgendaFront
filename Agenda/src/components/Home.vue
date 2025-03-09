@@ -14,16 +14,53 @@
         </div>
       </div>
 
+      <!-- ✅ Calendario muestra eventos desde el backend -->
       <CalendarioInteractivo :events="eventos" />
 
+      <!-- ✅ Modales -->
       <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
-      <FormularioEvento v-if="mostrarModalEvento" ref="formularioEventoRef" @cerrar="cerrarModalEvento" @guardar="guardarEvento" />
-      <RecordatorioModal v-if="mostrarRecordatorio" ref="recordatorioRef" @cerrar="cerrarRecordatorio" @guardar="guardarRecordatorio" />
+      <FormularioEvento 
+        v-if="mostrarModalEvento" 
+        ref="formularioEventoRef" 
+        @cerrar="cerrarModalEvento" 
+        @guardar="guardarEvento" 
+      />
+      <RecordatorioModal 
+        v-if="mostrarRecordatorio" 
+        ref="recordatorioRef" 
+        @cerrar="cerrarRecordatorio" 
+        @guardar="guardarRecordatorio" 
+      />
       <Contactos v-if="mostrarContactos" ref="contactosRef" @cerrar="cerrarContactosModal" />
       <Eventos v-if="mostrarEventos" ref="eventosRef" @cerrar="cerrarEventosModal" />
-      <Recordatorios v-if="mostrarRecordatorios" :recordatorios="misRecordatorios" @cerrar="cerrarRecordatoriosModal" />
+      <Recordatorios 
+        v-if="mostrarRecordatorios" 
+        :recordatorios="misRecordatorios" 
+        @cerrar="cerrarRecordatoriosModal" 
+      />
+      <RecordatorioModal
+      v-if="mostrarRecordatorio"
+      @cerrar="cerrarRecordatorio"
+      @guardar="guardarRecordatorio"
+      />
+      <Recordatorios
+      v-if="mostrarRecordatorios"
+      :recordatorios="recordatorios"
+      @cerrar="cerrarRecordatoriosModal"
+      />
+      <FormularioContacto
+      v-if="mostrarFormularioContacto"
+      @cerrar="cerrarFormularioContacto"
+      @guardar="guardarContacto"
+    />
+    <ContactosList
+      :contactos="contactos"
+      @eliminar="eliminarContacto"
+      @editar="editarContacto"
+    />
+
     </div>
-  </div>
+  </div>  
 </template>
 
 <script>
@@ -34,8 +71,11 @@ import Contactos from './Contactos.vue';
 import Eventos from './Eventos.vue';
 import FormularioEvento from './FormularioEvento.vue';
 import CalendarioInteractivo from './CalendarioInteractivo.vue';
-import RecordatorioModal from './RecordatorioModal.vue';
-import Recordatorios from './Recordatorios.vue';
+import { getRecordatorios } from '@/services/recordatorioServices'; //importar los gets para recordatorios
+import RecordatorioModal from './RecordatorioModal.vue'; // import del modal
+import Recordatorios from './Recordatorios.vue'; 
+import { getEventos } from '@/services/eventoServices'; //  Importar servicio de eventos
+import { getContactos, deleteContacto, updateContacto } from '@/services/contactoServices'; //import de los gets de contactos
 
 export default {
   components: {
@@ -47,42 +87,77 @@ export default {
     FormularioEvento,
     CalendarioInteractivo,
     RecordatorioModal,
-    Recordatorios
+    Recordatorios,
+    
   },
   data() {
     return {
       isLoggedIn: false,
-      eventos: [],
+      eventos: [], // ✅ Lista de eventos
+      contactos: [],
       mostrarContactos: false,
       mostrarEventos: false,
       mostrarModalContacto: false,
       mostrarModalEvento: false,
       mostrarRecordatorio: false,
       mostrarRecordatorios: false,
-      misRecordatorios: [ 
-        { titulo: 'Recordatorio ', descripcion: 'Descripcion' },
-        { titulo: 'REcordatorio ', descripcion: 'Descripcion' }
-      ]
+      FormularioContacto: false,
+      misRecordatorios: [],
+      mostrarFormularioContacto: false,
     };
+  },
+  async created() {
+    try {
+      // ✅ Obtener eventos desde el backend
+      this.eventos = await getEventos();
+      console.log('Eventos cargados:', this.eventos);
+
+      // ✅ Obtener recordatorios desde el backend
+      this.misRecordatorios = await getRecordatorios();
+      console.log('Recordatorios cargados:', this.misRecordatorios);
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+    }
+
+    try {
+      this.recordatorios = await getRecordatorios();
+      console.log('Recordatorios cargados:', this.recordatorios);
+    } catch (error) {
+      console.error('Error cargando recordatorios:', error);
+    }
+
+    try {
+        this.contactos = await getContactos();
+        console.log('Contactos cargados:', this.contactos);
+      } catch (error) {
+        console.error('Error cargando contactos:', error);
+      }
+
   },
   methods: {
     handleLoginSuccess() {
       this.isLoggedIn = true;
     },
-    mostrarFormularioContactoModal() {
-      this.mostrarModalContacto = true;
+    abrirFormularioContacto() {
+      this.mostrarFormularioContacto = true;
+    },
+    cerrarFormularioContacto() {
+      this.mostrarFormularioContacto = false;
     },
     mostrarFormularioEventoModal() {
       this.mostrarModalEvento = true;
-    },
-    mostrarRecordatorioModal() {
-      this.mostrarRecordatorio = true;
     },
     mostrarContactosModal() {
       this.mostrarContactos = true;
     },
     mostrarEventosModal() {
       this.mostrarEventos = true;
+    },
+    mostrarRecordatorioModal() {
+      this.mostrarRecordatorio = true;
+    },
+    cerrarRecordatorio() {
+      this.mostrarRecordatorio = false;
     },
     mostrarRecordatoriosModal() {
       this.mostrarRecordatorios = true;
@@ -96,27 +171,56 @@ export default {
     cerrarModalEvento() {
       this.mostrarModalEvento = false;
     },
-    cerrarRecordatorio() {
-      this.mostrarRecordatorio = false;
-    },
     cerrarContactosModal() {
       this.mostrarContactos = false;
     },
     cerrarEventosModal() {
       this.mostrarEventos = false;
     },
-    guardarRecordatorio(recordatorio) {
-      console.log('Recordatorio guardado:', recordatorio);
-    },
-    guardarEvento(evento) {
-      this.eventos.push(evento);
+    // Guardar nuevo evento
+    async guardarEvento(evento) {
+      this.eventos.push(evento); // Añadir nuevo evento a la lista
+      console.log('Evento guardado:', evento);
       this.cerrarModalEvento();
     },
-  },
+    // Guardar nuevo recordatorio
+    async guardarRecordatorio(recordatorio) {
+      this.misRecordatorios.push(recordatorio);
+      console.log('Recordatorio guardado:', recordatorio);
+    },
+    async guardarRecordatorio(recordatorio) {
+      console.log('Nuevo recordatorio recibido:', recordatorio);
+      this.recordatorios.push(recordatorio); // Añadir a la lista
+    },
+    async guardarContacto(contacto) {
+      console.log('Nuevo contacto recibido:', contacto);
+      this.contactos.push(contacto); // ✅ Añadir a la lista
+    },
+    async eliminarContacto(id) {
+      try {
+        await deleteContacto(id);
+        this.contactos = this.contactos.filter(contacto => contacto.id !== id);
+      } catch (error) {
+        console.error('Error eliminando contacto:', error);
+      }
+    },
+    async editarContacto(contactoActualizado) {
+      try {
+        const contacto = await updateContacto(contactoActualizado.id, contactoActualizado);
+        const index = this.contactos.findIndex(c => c.id === contacto.id);
+        if (index !== -1) {
+          this.contactos.splice(index, 1, contacto);
+        }
+      } catch (error) {
+        console.error('Error actualizando contacto:', error);
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
+/*  Mantener el estilo original */
 .home-container {
   display: flex;
   flex-direction: column;
@@ -152,64 +256,5 @@ export default {
 .button-group button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.calendar-container {
-  margin-top: 20px;
-  width: 95%;
-  max-width: 1200px;
-  height: 80vh;
-  overflow: hidden;
-}
-
-/* Paleta de colores azules */
-.btn-primary {
-  background-color: #4728fe;
-  border-color: #4728fe;
-}
-
-.btn-primary:hover {
-  background-color: #633afe;
-  border-color: #633afe;
-}
-
-.btn-success {
-  background-color: #804cff;
-  border-color: #804cff;
-}
-
-.btn-success:hover {
-  background-color: #633afe;
-  border-color: #633afe;
-}
-
-.btn-outline-primary {
-  color: #4728fe;
-  border-color: #4728fe;
-}
-
-.btn-outline-primary:hover {
-  background-color: #e0e0e0;
-  border-color: #4728fe;
-}
-
-.btn-outline-success {
-  color: #804cff;
-  border-color: #804cff;
-}
-
-.btn-outline-success:hover {
-  background-color: #e0e0e0;
-  border-color: #804cff;
-}
-
-.btn-info {
-  background-color: #0dcaf0;
-  border-color: #0dcaf0;
-}
-
-.btn-info:hover {
-  background-color: #3dd5f3;
-  border-color: #3dd5f3;
 }
 </style>

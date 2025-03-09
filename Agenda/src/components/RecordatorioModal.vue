@@ -55,6 +55,7 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import { createRecordatorio } from '@/services/recordatorioServices'; // ✅ Importar servicio
 
 export default {
   data() {
@@ -72,13 +73,32 @@ export default {
     };
   },
   methods: {
-    guardarRecordatorio() {
-      // Aquí va la lógica para enviar el recordatorio al backend
-      console.log('Recordatorio:', this.recordatorio);
-      this.$emit('guardar', this.recordatorio);
-      const modal = Modal.getInstance(document.getElementById('recordatorioModal'));
-      modal.hide();
-      this.$emit('cerrar');
+    async guardarRecordatorio() {
+      try {
+        // ✅ Prepara los datos
+        const nuevoRecordatorio = {
+          nota: this.recordatorio.nota,
+          url: this.recordatorio.url,
+          fecha: this.recordatorio.fechaActivo ? this.recordatorio.fecha : null,
+          hora: this.recordatorio.horaActivo ? this.recordatorio.hora : null,
+          etiquetas: this.recordatorio.etiquetas,
+          prioridad: this.recordatorio.prioridad
+        };
+
+        // ✅ Guarda en el backend
+        const recordatorioGuardado = await createRecordatorio(nuevoRecordatorio);
+        console.log('Recordatorio guardado:', recordatorioGuardado);
+
+        // ✅ Notifica al componente padre para actualizar la lista
+        this.$emit('guardar', recordatorioGuardado);
+
+        // ✅ Cierra el modal
+        const modal = Modal.getInstance(document.getElementById('recordatorioModal'));
+        modal.hide();
+        this.$emit('cerrar');
+      } catch (error) {
+        console.error('Error al guardar recordatorio:', error);
+      }
     },
     showModal() {
       const modal = new Modal(document.getElementById('recordatorioModal'));

@@ -35,6 +35,7 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import { createContacto } from '@/services/contactoServices'; // Importar el servicio
 
 export default {
   data() {
@@ -48,13 +49,22 @@ export default {
     };
   },
   methods: {
-    guardarContacto() {
-      // Aquí va la lógica para enviar el contacto al backend
-      console.log('Contacto:', this.contacto);
-      this.$emit('guardar', this.contacto);
-      const modal = Modal.getInstance(document.getElementById('contactoModal'));
-      modal.hide();
-      this.$emit('cerrar');
+    async guardarContacto() {
+      try {
+        // ✅ Guardar contacto en el backend
+        const nuevoContacto = await createContacto(this.contacto);
+        console.log('Contacto guardado:', nuevoContacto);
+
+        // ✅ Emitir el evento para actualizar la lista en el componente padre
+        this.$emit('guardar', nuevoContacto);
+
+        // ✅ Cerrar el modal
+        const modal = Modal.getInstance(document.getElementById('contactoModal'));
+        modal.hide();
+        this.$emit('cerrar');
+      } catch (error) {
+        console.error('Error al guardar contacto:', error);
+      }
     },
     showModal() {
       const modal = new Modal(document.getElementById('contactoModal'));

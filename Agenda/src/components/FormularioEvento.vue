@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="eventoModalLabel">Añadir Evento</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button> 
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
@@ -35,6 +35,7 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import { createEvento } from '@/services/eventoServices'; // ✅ Importar servicio
 
 export default {
   data() {
@@ -48,11 +49,20 @@ export default {
     };
   },
   methods: {
-    guardarEvento() {
-      this.$emit('guardar', this.evento);
-      const modal = Modal.getInstance(document.getElementById('eventoModal'));
-      modal.hide();
-      this.$emit('cerrar');
+    async guardarEvento() {
+      try {
+        // ✅ Guardar el evento mediante el servicio
+        await createEvento(this.evento);
+        this.$emit('guardar', this.evento);
+        
+        // ✅ Ocultar modal después de guardar
+        const modal = Modal.getInstance(document.getElementById('eventoModal'));
+        modal.hide();
+        
+        this.$emit('cerrar');
+      } catch (error) {
+        console.error('Error guardando evento:', error);
+      }
     },
     showModal() {
       const modal = new Modal(document.getElementById('eventoModal'));
