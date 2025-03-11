@@ -9,19 +9,19 @@
         <div class="modal-body">
           <div class="mb-3">
             <label for="nombre" class="form-label">Nombre</label>
-            <input type="text" id="nombre" v-model="evento.nombre" class="form-control">
+            <input type="text" id="nombre" v-model="evento.name" class="form-control">
           </div>
           <div class="mb-3">
             <label for="descripcion" class="form-label">Descripción</label>
-            <textarea id="descripcion" v-model="evento.descripcion" class="form-control"></textarea>
+            <textarea id="descripcion" v-model="evento.description" class="form-control"></textarea>
           </div>
           <div class="mb-3">
             <label for="fecha" class="form-label">Fecha</label>
-            <input type="datetime-local" id="fecha" v-model="evento.fecha" class="form-control">
+            <input type="date" id="fecha" v-model="evento.date" class="form-control">
           </div>
           <div class="mb-3">
             <label for="hora" class="form-label">Hora</label>
-            <input type="time" id="hora" v-model="evento.hora" class="form-control">
+            <input type="time" id="hora" v-model="evento.hour" class="form-control">
           </div>
         </div>
         <div class="modal-footer">
@@ -41,10 +41,10 @@ export default {
   data() {
     return {
       evento: {
-        nombre: '',
-        descripcion: '',
-        fecha: null,
-        hora: null
+        name: '',
+        description: '',
+        date: null,
+        hour: null
       }
     };
   },

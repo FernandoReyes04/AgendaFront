@@ -3,6 +3,7 @@ import api from './api';
 //  Crear un evento
 export const createEvento = async (evento) => {
   try {
+    console.log(evento)
     const response = await api.post('/event', evento);
     return response.data;
   } catch (error) {
