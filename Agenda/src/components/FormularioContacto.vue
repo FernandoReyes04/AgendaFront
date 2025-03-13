@@ -8,20 +8,24 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre</label>
-            <input type="text" id="nombre" v-model="contacto.nombre" class="form-control">
+            <label for="first_name" class="form-label">Nombre</label>
+            <input type="text" id="first_name" v-model="contacto.first_name" class="form-control">
           </div>
           <div class="mb-3">
-            <label for="telefono" class="form-label">Teléfono</label>
-            <input type="tel" id="telefono" v-model="contacto.telefono" class="form-control">
+            <label for="last_name" class="form-label">Apellido</label>
+            <input type="text" id="last_name" v-model="contacto.last_name" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="phone_number" class="form-label">Teléfono</label>
+            <input type="tel" id="phone_number" v-model="contacto.phone_number" class="form-control">
           </div>
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" id="email" v-model="contacto.email" class="form-control">
           </div>
           <div class="mb-3">
-            <label for="direccion" class="form-label">Dirección</label>
-            <input type="text" id="direccion" v-model="contacto.direccion" class="form-control">
+            <label for="notes" class="form-label">Notas</label>
+            <input type="text" id="notes" v-model="contacto.notes" class="form-control">
           </div>
         </div>
         <div class="modal-footer">
@@ -41,22 +45,31 @@ export default {
   data() {
     return {
       contacto: {
-        nombre: '',
-        telefono: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
         email: '',
-        direccion: ''
+        notes: ''
       }
     };
   },
   methods: {
     async guardarContacto() {
       try {
+        const nuevoContacto = {
+          first_name: this.contacto.first_name,
+          last_name: this.contacto.last_name,
+          phone_number: this.contacto.phone_number,
+          email: this.contacto.email,
+          notes: this.contacto.notes,
+        }
+
         // ✅ Guardar contacto en el backend
-        const nuevoContacto = await createContacto(this.contacto);
-        console.log('Contacto guardado:', nuevoContacto);
+        const contactoGuardado = await createContacto(nuevoContacto);
+        console.log('Contacto guardado:', contactoGuardado);
 
         // ✅ Emitir el evento para actualizar la lista en el componente padre
-        this.$emit('guardar', nuevoContacto);
+        this.$emit('guardar', contactoGuardado);
 
         // ✅ Cerrar el modal
         const modal = Modal.getInstance(document.getElementById('contactoModal'));

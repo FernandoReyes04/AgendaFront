@@ -7,9 +7,10 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button> 
         </div>
         <div class="modal-body">
-          <ul>
+          <ul v-if="eventos.length > 0">
             <li v-for="evento in eventos" :key="evento.id">
-              {{ evento.nombre }} - {{ evento.fecha }}
+              {{ evento.name }} - {{ evento.date }}<br>
+              {{ evento.description }}
             </li>
           </ul>
         </div>
@@ -22,25 +23,17 @@
 </template>
 
 <script>
-import { Modal } from 'bootstrap';
-
 export default {
-  data() {
-    return {
-      eventos: [
-        { id: 1, nombre: 'raulfest', fecha: '2025-10-27T10:00' },
-        { id: 2, nombre: 'rifa de negros', fecha: '2025-11-15T18:00' }
-      ]
-    };
-  },
-  methods: {
-    showModal() {
-      const modal = new Modal(document.getElementById('eventosModal'));
-      modal.show();
+    props: {
+      eventos: {
+        type: Array,
+        required: true
+      }
+    },
+    methods: {
+      cerrarModal() {
+        this.$emit('cerrar');
+      }
     }
-  },
-  mounted() {
-    this.showModal();
-  }
-};
+  };
 </script>

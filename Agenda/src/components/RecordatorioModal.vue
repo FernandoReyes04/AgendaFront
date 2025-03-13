@@ -8,40 +8,24 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="nota" class="form-label">Nota</label>
-            <input type="text" id="nota" v-model="recordatorio.nota" class="form-control">
+            <label for="name" class="form-label">Nombre</label>
+            <input type="text" id="name" v-model="recordatorio.name" class="form-control">
           </div>
           <div class="mb-3">
-            <label for="url" class="form-label">URL</label>
-            <input type="url" id="url" v-model="recordatorio.url" class="form-control">
+            <label for="description" class="form-label">Descripcion</label>
+            <input type="text" id="description" v-model="recordatorio.description" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" v-model="recordatorio.email" class="form-control">
           </div>
           <div class="mb-3">
             <label class="form-label">Fecha</label>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="fechaSwitch" v-model="recordatorio.fechaActivo">
-              <label class="form-check-label" for="fechaSwitch">Activar Fecha</label>
-            </div>
-            <input type="datetime-local" v-if="recordatorio.fechaActivo" v-model="recordatorio.fecha" class="form-control">
+            <input type="date" v-model="recordatorio.date" class="form-control">
           </div>
           <div class="mb-3">
             <label class="form-label">Hora</label>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="horaSwitch" v-model="recordatorio.horaActivo">
-              <label class="form-check-label" for="horaSwitch">Activar Hora</label>
-            </div>
-            <input type="time" v-if="recordatorio.horaActivo" v-model="recordatorio.hora" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label for="etiquetas" class="form-label">Etiquetas</label>
-            <input type="text" id="etiquetas" v-model="recordatorio.etiquetas" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label for="prioridad" class="form-label">Prioridad</label>
-            <select id="prioridad" v-model="recordatorio.prioridad" class="form-select">
-              <option value="baja">Baja</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-            </select>
+            <input type="time" v-model="recordatorio.hour" class="form-control">
           </div>
         </div>
         <div class="modal-footer">
@@ -61,14 +45,11 @@ export default {
   data() {
     return {
       recordatorio: {
-        nota: '',
-        url: '',
-        fechaActivo: false,
-        fecha: null,
-        horaActivo: false,
-        hora: null,
-        etiquetas: '',
-        prioridad: 'baja'
+        name: '',
+        description: '',
+        email: '',
+        date: '',
+        hour: ''
       }
     };
   },
@@ -77,12 +58,11 @@ export default {
       try {
         // ✅ Prepara los datos
         const nuevoRecordatorio = {
-          nota: this.recordatorio.nota,
-          url: this.recordatorio.url,
-          fecha: this.recordatorio.fechaActivo ? this.recordatorio.fecha : null,
-          hora: this.recordatorio.horaActivo ? this.recordatorio.hora : null,
-          etiquetas: this.recordatorio.etiquetas,
-          prioridad: this.recordatorio.prioridad
+          name: this.recordatorio.name,
+          description: this.recordatorio.description,
+          email: this.recordatorio.email,
+          date: this.recordatorio.date,
+          hour: this.recordatorio.hour
         };
 
         // ✅ Guarda en el backend

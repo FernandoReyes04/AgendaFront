@@ -9,7 +9,7 @@
           <div class="modal-body">
             <ul v-if="recordatorios.length > 0">
               <li v-for="(recordatorio, index) in recordatorios" :key="index">
-                {{ recordatorio.titulo }} - {{ recordatorio.descripcion }}
+                {{ recordatorio.name }} - {{ recordatorio.description }} <b>{{ recordatorio.date }}</b>
               </li>
             </ul>
             <p v-else>No tienes recordatorios.</p>

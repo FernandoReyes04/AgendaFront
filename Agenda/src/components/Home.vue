@@ -7,7 +7,7 @@
         <div class="button-group">
           <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
           <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
-          <button class="btn btn-info btn-lg" @click="mostrarRecordatorioModal">Añadir Recordatorio</button>
+          <button class="btn btn-info btn-lg" @click="mostrarRecordatorioModal">Añadir Recordatorio +</button>
           <button class="btn btn-outline-primary btn-lg" @click="mostrarContactosModal">Mis Contactos</button>
           <button class="btn btn-outline-success btn-lg" @click="mostrarEventosModal">Mis Eventos</button>
           <button class="btn btn-outline-info btn-lg" @click="mostrarRecordatoriosModal">Mis Recordatorios</button>
@@ -18,7 +18,11 @@
       <CalendarioInteractivo :events="eventos" />
 
       <!-- ✅ Modales -->
-      <FormularioContacto v-if="mostrarModalContacto" ref="formularioContactoRef" @cerrar="cerrarModalContacto" />
+      <FormularioContacto
+        v-if="mostrarModalContacto"
+        ref="formularioContactoRef"
+        @cerrar="cerrarModalContacto"
+        @guardar="guardarContacto" />
       <FormularioEvento 
         v-if="mostrarModalEvento" 
         ref="formularioEventoRef" 
@@ -31,33 +35,22 @@
         @cerrar="cerrarRecordatorio" 
         @guardar="guardarRecordatorio" 
       />
-      <Contactos v-if="mostrarContactos" ref="contactosRef" @cerrar="cerrarContactosModal" />
-      <Eventos v-if="mostrarEventos" ref="eventosRef" @cerrar="cerrarEventosModal" />
+      <Contactos
+        v-if="mostrarContactos"
+        ref="contactosRef"
+        :contactos="contactos"
+        @cerrar="cerrarContactosModal"
+      />
+      <Eventos
+      v-if="mostrarEventos"
+      ref="eventosRef"
+      :eventos="eventos"
+      @cerrar="cerrarEventosModal" />
       <Recordatorios 
         v-if="mostrarRecordatorios" 
         :recordatorios="misRecordatorios" 
         @cerrar="cerrarRecordatoriosModal" 
       />
-      <RecordatorioModal
-      v-if="mostrarRecordatorio"
-      @cerrar="cerrarRecordatorio"
-      @guardar="guardarRecordatorio"
-      />
-      <Recordatorios
-      v-if="mostrarRecordatorios"
-      :recordatorios="recordatorios"
-      @cerrar="cerrarRecordatoriosModal"
-      />
-      <FormularioContacto
-      v-if="mostrarFormularioContacto"
-      @cerrar="cerrarFormularioContacto"
-      @guardar="guardarContacto"
-    />
-    <ContactosList
-      :contactos="contactos"
-      @eliminar="eliminarContacto"
-      @editar="editarContacto"
-    />
 
     </div>
   </div>  
@@ -108,13 +101,8 @@ export default {
   },
   async created() {
     try {
-      // ✅ Obtener eventos desde el backend
       this.eventos = await getEventos();
       console.log('Eventos cargados:', this.eventos);
-
-      // ✅ Obtener recordatorios desde el backend
-      this.misRecordatorios = await getRecordatorios();
-      console.log('Recordatorios cargados:', this.misRecordatorios);
     } catch (error) {
       console.error('Error cargando datos:', error);
     }
@@ -138,17 +126,14 @@ export default {
     handleLoginSuccess() {
       this.isLoggedIn = true;
     },
-    abrirFormularioContacto() {
-      this.mostrarFormularioContacto = true;
+    mostrarFormularioContactoModal() {
+      this.mostrarModalContacto = true;
     },
-    cerrarFormularioContacto() {
-      this.mostrarFormularioContacto = false;
+    cerrarFormularioContactoModal() {
+      this.mostrarModalContacto = false;
     },
     mostrarFormularioEventoModal() {
       this.mostrarModalEvento = true;
-    },
-    mostrarContactosModal() {
-      this.mostrarContactos = true;
     },
     mostrarEventosModal() {
       this.mostrarEventos = true;
@@ -171,6 +156,9 @@ export default {
     cerrarModalEvento() {
       this.mostrarModalEvento = false;
     },
+    mostrarContactosModal() {
+      this.mostrarContactos = true;
+    },
     cerrarContactosModal() {
       this.mostrarContactos = false;
     },
@@ -187,10 +175,6 @@ export default {
     async guardarRecordatorio(recordatorio) {
       this.misRecordatorios.push(recordatorio);
       console.log('Recordatorio guardado:', recordatorio);
-    },
-    async guardarRecordatorio(recordatorio) {
-      console.log('Nuevo recordatorio recibido:', recordatorio);
-      this.recordatorios.push(recordatorio); // Añadir a la lista
     },
     async guardarContacto(contacto) {
       console.log('Nuevo contacto recibido:', contacto);
