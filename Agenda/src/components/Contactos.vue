@@ -1,15 +1,14 @@
 <template>
-  <div class="modal fade" id="contactosModal" tabindex="-1" aria-labelledby="contactosModalLabel" aria-hidden="true">
+  <div class="modal fade show" tabindex="-1" style="display: block;">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="contactosModalLabel">Mis Contactos</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" @click.stop="$emit('cerrar')"></button> 
         </div>
         <div class="modal-body">
-          <ul v-if="this.contactos.length > 0">
+          <ul v-if="contactos.length > 0">
             <li v-for="(contacto, index) in contactos" :key="contacto.id">
-              {{ contacto.nombre }} - {{ contacto.telefono }}
+              {{ contacto.last_name }}, {{ contacto.first_name }} - {{ contacto.phone_number }}
             </li>
           </ul>
         </div>
