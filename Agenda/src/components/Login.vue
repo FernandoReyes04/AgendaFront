@@ -13,6 +13,7 @@
         </div>
         <button class="login-button" @click="login">Ingresar</button>
         <button class="create-user-button" @click="mostrarModalCrearUsuario">Crear Usuario</button>
+        <button class="skip-login-button" @click="skipLogin">Continuar sin iniciar sesión</button>
       </div>
   
       <div v-if="mostrarCrearUsuario" class="modal-overlay">
@@ -66,6 +67,10 @@
       }
     },
     methods: {
+      skipLogin() {
+        console.log('Saltando inicio de sesión');
+        this.$emit('login-success');
+      },
       login() {
         // esta en comentario pq si no se deberia de iniciar sesiona cada rato y da flojera
         // const usuario = this.usuarios.find(u => u.username === this.username && u.password === this.password);
@@ -123,10 +128,10 @@
   }
   
   .login-box {
-    background-color: white;
+    background-color: var(--neutral-100);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
     width: 300px;
   }
   
@@ -151,7 +156,7 @@
     border-radius: 4px;
   }
   
-  .login-button, .create-user-button, .create-button, .cancel-button {
+  .login-button, .create-user-button, .create-button, .cancel-button, .skip-login-button {
     width: 100%;
     padding: 10px;
     border: none;
@@ -161,13 +166,41 @@
   }
   
   .login-button {
-    background-color: #673ab7;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--neutral-100);
+    transition: all 0.3s ease;
+  }
+  
+  .login-button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
   
   .create-user-button {
-    background-color: #e0e0e0;
-    color: #333;
+    background-color: var(--neutral-300);
+    color: var(--neutral-800);
+    transition: all 0.3s ease;
+  }
+  
+  .create-user-button:hover {
+    background-color: var(--neutral-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .skip-login-button {
+    background-color: var(--secondary-color);
+    color: var(--neutral-100);
+    margin-top: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .skip-login-button:hover {
+    background-color: var(--secondary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
   
   .modal-overlay {
@@ -190,13 +223,27 @@
   }
   
   .create-button {
-    background-color: #4caf50;
-    color: white;
+    background-color: var(--success-color);
+    color: var(--neutral-100);
+    transition: all 0.3s ease;
+  }
+  
+  .create-button:hover {
+    background-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
   }
   
   .cancel-button {
-    background-color: #f44336;
-    color: white;
+    background-color: var(--error-color);
+    color: var(--neutral-100);
+    transition: all 0.3s ease;
+  }
+  
+  .cancel-button:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
   }
   
   .password-strength-bar {

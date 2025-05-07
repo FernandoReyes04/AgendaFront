@@ -1,21 +1,62 @@
 <template>
   <div class="home-container">
     <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
-    <div v-else class="home-container">
-      <Header />
-      <div class="button-container">
-        <div class="button-group">
-          <button class="btn btn-primary btn-lg" @click="mostrarFormularioContactoModal">Agregar Contacto +</button>
-          <button class="btn btn-success btn-lg" @click="mostrarFormularioEventoModal">Añadir Evento +</button>
-          <button class="btn btn-info btn-lg" @click="mostrarFormularioRecordatorio">Añadir Recordatorio +</button>
-          <button class="btn btn-outline-primary btn-lg" @click="mostrarContactosModal">Mis Contactos</button>
-          <button class="btn btn-outline-success btn-lg" @click="mostrarEventosModal">Mis Eventos</button>
-          <button class="btn btn-outline-info btn-lg" @click="mostrarRecordatoriosModal">Mis Recordatorios</button>
+    <PerfilUsuario 
+      v-else-if="mostrarPerfil" 
+      @volver="cerrarPerfilUsuario"
+      :contactos="contactos"
+      :eventos="eventos"
+      :recordatorios="recordatorios"
+    />
+    <div v-else class="main-content">
+      <Header @show-login="showLogin" />
+      
+      <div class="app-container">
+        <!-- Barra lateral con botones -->
+        <div class="sidebar">
+          <!-- Contenedor para los botones de "Agregar" -->
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">Agregar</h3>
+            <button class="sidebar-btn primary-btn" @click="mostrarFormularioContactoModal">
+              <i class="fas fa-user-plus"></i> Añadir Contacto
+            </button>
+            <button class="sidebar-btn secondary-btn" @click="mostrarFormularioEventoModal">
+              <i class="fas fa-calendar-plus"></i> Añadir Evento
+            </button>
+            <button class="sidebar-btn accent-btn" @click="mostrarFormularioRecordatorio">
+              <i class="fas fa-bell"></i> Añadir Recordatorio
+            </button>
+          </div>
+
+          <!-- Contenedor para los botones de "Consultar" -->
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">Consultar</h3>
+            <button class="sidebar-btn primary-btn" @click="mostrarContactosModal">
+              <i class="fas fa-address-book"></i> Ver Contactos
+            </button>
+            <button class="sidebar-btn secondary-btn" @click="mostrarEventosModal">
+              <i class="fas fa-calendar-alt"></i> Ver Eventos
+            </button>
+            <button class="sidebar-btn accent-btn" @click="mostrarRecordatoriosModal">
+              <i class="fas fa-clipboard-list"></i> Ver Recordatorios
+            </button>
+          </div>
+          
+          <!-- Contenedor para el perfil -->
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">Perfil</h3>
+            <button class="sidebar-btn profile-btn" @click="mostrarPerfilUsuario">
+              <i class="fas fa-user-circle"></i> Mi Perfil
+            </button>
+          </div>
+        </div>
+        
+        <!-- Contenido principal con calendario -->
+        <div class="main-area">
+          <!-- ✅ Calendario muestra eventos desde el backend -->
+          <CalendarioInteractivo :events="eventos" />
         </div>
       </div>
-
-      <!-- ✅ Calendario muestra eventos desde el backend -->
-      <CalendarioInteractivo :events="eventos" />
 
       <!-- ✅ Modales -->
       <FormularioContacto
@@ -55,6 +96,18 @@
         @cerrar="cerrarRecordatoriosModal" 
       />
 
+      <!-- Perfil de Usuario -->
+      <PerfilUsuario
+        v-if="mostrarPerfil"
+        :contactos="this.contactos"
+        :eventos="this.eventos"
+        :recordatorios="this.recordatorios"
+        @cerrar="cerrarPerfilUsuario"
+      />
+
+    </div>
+    <div class="footer-wrapper" v-if="isLoggedIn">
+      <Footer />
     </div>
   </div>  
 </template>
@@ -62,6 +115,7 @@
 <script>
 import Login from './Login.vue';
 import Header from './Header.vue';
+import Footer from './Footer.vue';
 import FormularioContacto from './FormularioContacto.vue';
 import Contactos from './Contactos.vue';
 import Eventos from './Eventos.vue';
@@ -73,11 +127,13 @@ import RecordatorioModal from './RecordatorioModal.vue'; // import del modal
 import Recordatorios from './Recordatorios.vue'; 
 import { getEventos } from '@/services/eventoServices'; //  Importar servicio de eventos
 import { getContactos, deleteContacto, updateContacto } from '@/services/contactoServices'; //import de los gets de contactos
+import PerfilUsuario from './PerfilUsuario.vue';
 
 export default {
   components: {
     Login,
     Header,
+    Footer,
     FormularioContacto,
     Contactos,
     Eventos,
@@ -86,11 +142,11 @@ export default {
     CalendarioInteractivo,
     RecordatorioModal,
     Recordatorios,
-    
+    PerfilUsuario
   },
   data() {
     return {
-      isLoggedIn: false,
+      isLoggedIn: true, // Modificado para saltar la pantalla de login
       eventos: [],
       contactos: [],
       mostrarContactos: false,
@@ -101,8 +157,12 @@ export default {
       mostrarRecordatorios: false,
       FormularioContacto: false,
       mostrarFormularioContacto: false,
-      recordatorios: []
+      recordatorios: [],
+      mostrarPerfil: false
     };
+  },
+  mounted() {
+    // Ya no necesitamos $on porque ahora usamos @event en la plantilla
   },
   async created() {
     try {
@@ -131,23 +191,42 @@ export default {
     handleLoginSuccess() {
       this.isLoggedIn = true;
     },
+    showLogin() {
+      this.isLoggedIn = false;
+    },
     mostrarFormularioContactoModal() {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
       this.mostrarModalContacto = true;
     },
     cerrarFormularioContactoModal() {
       this.mostrarModalContacto = false;
     },
     mostrarFormularioEventoModal() {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
       this.mostrarModalEvento = true;
+      // Dar tiempo para que el componente se renderice antes de mostrar el modal
+      this.$nextTick(() => {
+        if (this.$refs.formularioEventoRef) {
+          this.$refs.formularioEventoRef.showModal();
+        }
+      });
     },
     mostrarEventosModal() {
       this.mostrarEventos = true;
     },
     mostrarFormularioRecordatorio() {
-    this.mostrarModalRecordatorio = true;
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
+      this.mostrarModalRecordatorio = true;
     },
     cerrarModalRecordatorio() {
       this.mostrarModalRecordatorio = false;
+      this.limpiarResidualModal();
     },
     mostrarRecordatoriosModal() {
       this.mostrarRecordatorios = true;
@@ -157,9 +236,11 @@ export default {
     },
     cerrarModalContacto() {
       this.mostrarModalContacto = false;
+      this.limpiarResidualModal();
     },
     cerrarModalEvento() {
       this.mostrarModalEvento = false;
+      this.limpiarResidualModal();
     },
     mostrarContactosModal() {
       this.mostrarContactos = true;
@@ -204,13 +285,48 @@ export default {
       } catch (error) {
         console.error('Error actualizando contacto:', error);
       }
+    },
+    mostrarPerfilUsuario() {
+      this.mostrarPerfil = true;
+    },
+    cerrarPerfilUsuario() {
+      this.mostrarPerfil = false;
+      this.limpiarResidualModal();
+    },
+    
+    // Método centralizado para limpiar residuales de modales
+    limpiarResidualModal() {
+      // Eliminar la clase modal-open del body
+      document.body.classList.remove('modal-open');
+      
+      // Eliminar cualquier backdrop modal que pueda quedar
+      const backdrops = document.getElementsByClassName('modal-backdrop');
+      while(backdrops.length > 0) {
+        backdrops[0].parentNode.removeChild(backdrops[0]);
+      }
+      
+      // Eliminar cualquier modal que quede en el DOM
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        if (modal && modal.style) {
+          modal.style.display = 'none';
+          modal.classList.remove('show');
+          modal.setAttribute('aria-hidden', 'true');
+          modal.removeAttribute('aria-modal');
+          modal.removeAttribute('role');
+        }
+      });
+      
+      // Desbloquear el scroll
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     }
   }
 };
 </script>
 
 <style scoped>
-/*  Mantener el estilo original */
+/* Estilos unificados */
 .home-container {
   display: flex;
   flex-direction: column;
@@ -218,21 +334,253 @@ export default {
   justify-content: flex-start;
   min-height: 100vh;
   width: 100%;
-  padding-top: 60px;
   background-color: white;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  padding-top: 70px; /* Espacio para el header fijo */
+  padding-bottom: 40px; /* Espacio para evitar que el contenido choque con el footer */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+/* Estilos para la barra lateral */
+.sidebar {
+  width: 250px;
+  min-width: 250px;
+  background-color: var(--neutral-100);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 15px;
+  margin-top: 20px;
+  border: 1px solid var(--neutral-300);
+  align-self: flex-start;
+  position: sticky;
+  top: 90px; /* Ajustado para que quede por debajo del header fijo */
+  font-size: 0.92em; /* Texto ligeramente más pequeño */
+}
+
+.sidebar-section {
+  margin-bottom: 25px;
+}
+
+.sidebar-title {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.sidebar-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: left;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-btn:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-btn.accent-btn {
+  background-color: var(--accent-color);
+  color: var(--neutral-100);
+}
+
+.sidebar-btn.accent-btn:hover {
+  background-color: #2ea841;
+}
+
+.sidebar-btn.profile-btn {
+  background-color: #4a6baf;
+  border: 2px solid #4a6baf;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-btn.profile-btn:hover {
+  background-color: white;
+  color: #4a6baf;
+}
+
+/* Área principal con el calendario */
+.main-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Wrapper para el footer de ancho completo */
+.footer-wrapper {
+  width: 100%;
+  margin-top: auto; /* Empuja el footer al fondo */
 }
 
 .button-container {
   width: 100%;
   display: flex;
   justify-content: center;
+  padding: 20px 0;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .button-group {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
+  justify-content: center;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+/* Estilos para botones personalizados */
+.custom-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin: 5px;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.custom-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botones con fondo de color */
+.primary-btn {
+  background-color: var(--primary-color);
+  color: var(--neutral-100);
+}
+
+.primary-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.secondary-btn {
+  background-color: var(--secondary-color);
+  color: var(--neutral-100);
+}
+
+.secondary-btn:hover {
+  background-color: var(--secondary-dark);
+}
+
+.accent-btn {
+  background-color: var(--accent-color);
+  color: var(--neutral-100);
+}
+
+.accent-btn:hover {
+  background-color: var(--accent-dark);
+}
+
+/* Botones con outline */
+.primary-outline-btn {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.primary-outline-btn:hover {
+  background-color: rgba(57, 73, 171, 0.1);
+}
+
+.secondary-outline-btn {
+  background-color: transparent;
+  color: var(--secondary-color);
+  border: 2px solid var(--secondary-color);
+}
+
+.secondary-outline-btn:hover {
+  background-color: rgba(0, 188, 212, 0.1);
+}
+
+.accent-outline-btn {
+  background-color: transparent;
+  color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+}
+
+.accent-outline-btn:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Estilos responsivos */
+@media (max-width: 992px) {
+  .app-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sidebar {
+    width: 100%;
+    max-width: 600px;
+    position: static; /* Quitar sticky en dispositivos pequeños */
+    margin-bottom: 20px;
+  }
+  
+  .sidebar-btn {
+    padding: 15px;
+    font-size: 16px;
+  }
+  
+  .sidebar-section {
+    margin-bottom: 15px;
+  }
+  
+  .main-area {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .app-container {
+    padding: 0 10px;
+  }
+  
+  .sidebar {
+    padding: 15px;
+  }
+  
+  .sidebar-btn {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+
+  .sidebar-title {
+    font-size: 16px;
+  }
 }
 
 .button-group button {
