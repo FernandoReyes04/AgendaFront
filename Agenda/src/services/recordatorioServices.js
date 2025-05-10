@@ -3,7 +3,7 @@ import api from './api';
 //  Crear un recordatorio
 export const createRecordatorio = async (recordatorio) => {
   try {
-    const response = await api.post('/reminder', recordatorio);
+    const response = await api.post('/api/reminder', recordatorio);
     return response.data;
   } catch (error) {
     console.error('Error creando recordatorio:', error);
@@ -14,7 +14,7 @@ export const createRecordatorio = async (recordatorio) => {
 //  Obtener todos los recordatorios
 export const getRecordatorios = async () => {
   try {
-    const response = await api.get('/reminder');
+    const response = await api.get('/api/reminder');
     return response.data;
   } catch (error) {
     console.error('Error obteniendo recordatorios:', error);
@@ -27,7 +27,7 @@ export const getRecordatorios = async () => {
 //  Eliminar un recordatorio
 export const deleteRecordatorio = async (id) => {
   try {
-    await api.delete(`/reminder/${id}`);
+    await api.delete(`/api/reminder/${id}`);
   } catch (error) {
     console.error('Error eliminando recordatorio:', error);
     throw error;
