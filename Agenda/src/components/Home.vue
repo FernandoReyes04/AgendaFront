@@ -7,6 +7,9 @@
       :contactos="contactos"
       :eventos="eventos"
       :recordatorios="recordatorios"
+      @eliminar-contacto="eliminarContacto"
+      @eliminar-evento="eliminarEvento"
+      @eliminar-recordatorio="eliminarRecordatorio"
     />
     <div v-else class="main-content">
       <Header @show-login="showLogin" />
@@ -78,6 +81,8 @@
         ref="formularioContactoRef"
         @cerrar="cerrarModalContacto"
         @guardar="guardarContacto"
+        :contactoEdicion="contactoEnEdicion"
+        :modoEdicion="modoEdicion"
         />
 
       <FormularioEvento 
@@ -85,6 +90,8 @@
         ref="formularioEventoRef" 
         @cerrar="cerrarModalEvento" 
         @guardar="guardarEvento" 
+        :eventoEdicion="eventoEnEdicion"
+        :modoEdicion="modoEdicion"
       />
 
       <FormularioRecordatorio
@@ -92,22 +99,30 @@
         ref="formularioRecordatorioRef" 
         @cerrar="cerrarModalRecordatorio" 
         @guardar="guardarRecordatorio" 
+        :recordatorioEdicion="recordatorioEnEdicion"
+        :modoEdicion="modoEdicion"
       />
 
       <Contactos
         v-if="mostrarContactos"
         :contactos="this.contactos"
         @cerrar="cerrarContactosModal"
+        @editar="editarContacto"
+        @eliminar="eliminarContacto"
       />
       <Eventos
       v-if="mostrarEventos"
       :eventos="this.eventos"
       @cerrar="cerrarEventosModal"
+      @editar="editarEvento"
+      @eliminar="eliminarEvento"
        />
       <Recordatorios 
         v-if="mostrarRecordatorios" 
         :recordatorios="this.recordatorios" 
         @cerrar="cerrarRecordatoriosModal" 
+        @editar="editarRecordatorio"
+        @eliminar="eliminarRecordatorio"
       />
 
       <!-- El perfil de usuario ya está renderizado en la parte superior del template -->
@@ -143,9 +158,9 @@ import RecordatorioModal from './RecordatorioModal.vue';
 import Recordatorios from './Recordatorios.vue';
 import PerfilSimpleNuevo from './PerfilSimpleNuevo.vue';
 import MiniCalendario from './MiniCalendario.vue';
-import { createRecordatorio, getRecordatorios } from '@/services/recordatorioServices'; 
-import { createEvento, getEventos } from '@/services/eventoServices'; 
-import { createContacto, getContactos } from '@/services/contactoServices'; 
+import { createRecordatorio, getRecordatorios, updateRecordatorio, deleteRecordatorio } from '@/services/recordatorioServices'; 
+import { createEvento, getEventos, updateEvento, deleteEvento } from '@/services/eventoServices'; 
+import { createContacto, getContactos, updateContacto, deleteContacto } from '@/services/contactoServices'; 
 import Notificacion from './Notificacion.vue';
 
 export default {
@@ -175,7 +190,11 @@ export default {
       mostrarModalContacto: false,
       mostrarModalEvento: false,
       mostrarModalRecordatorio: false,
-
+      // Variables para la edición
+      contactoEnEdicion: null,
+      eventoEnEdicion: null,
+      recordatorioEnEdicion: null,
+      modoEdicion: false,
       mostrarRecordatorios: false,
       recordatorios: [],
       mostrarPerfil: false,
@@ -335,80 +354,238 @@ export default {
       this.mostrarEventos = false;
       this.limpiarResidualModal();
     },
-    // Guardar nuevo evento
+    // Guardar nuevo evento o actualizar existente
     async guardarEvento(evento) {
       try {
-        // Crear evento en el backend
-        const eventoGuardado = await createEvento(evento);
-        this.eventos.push(eventoGuardado); // Añadir nuevo evento a la lista
-        console.log('Evento guardado:', eventoGuardado);
-        this.cerrarModalEvento();
+        console.log('Evento recibido:', evento);
         
-        // Mostrar notificación de éxito
-        this.mostrarNotificacion({
-          tipo: 'exito',
-          titulo: 'Evento guardado',
-          mensaje: 'Tu evento se ha guardado correctamente. Puedes verlo en tu perfil.'
-        });
+        // Si estamos en modo edición, actualizamos el evento existente
+        if (this.modoEdicion && this.eventoEnEdicion) {
+          // Aseguramos que el evento tenga el ID correcto
+          evento.id = this.eventoEnEdicion.id;
+          const eventoActualizado = await updateEvento(evento.id, evento);
+          
+          // Actualizamos el evento en el array local
+          const index = this.eventos.findIndex(e => e.id === eventoActualizado.id);
+          if (index !== -1) {
+            this.eventos.splice(index, 1, eventoActualizado);
+          }
+          
+          // Resetear estado de edición
+          this.modoEdicion = false;
+          this.eventoEnEdicion = null;
+          
+          this.cerrarModalEvento();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Evento actualizado',
+            mensaje: 'Tu evento se ha actualizado correctamente. Puedes verlo en tu perfil.'
+          });
+        } else {
+          // Es un nuevo evento
+          const eventoGuardado = await createEvento(evento);
+          this.eventos.push(eventoGuardado); // Añadir nuevo evento a la lista
+          console.log('Evento guardado:', eventoGuardado);
+          this.cerrarModalEvento();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Evento guardado',
+            mensaje: 'Tu evento se ha guardado correctamente. Puedes verlo en tu perfil.'
+          });
+        }
       } catch (error) {
-        console.error('Error al guardar evento:', error);
+        console.error('Error al guardar/actualizar evento:', error);
         
         // Mostrar notificación de error
         this.mostrarNotificacion({
           tipo: 'error',
-          titulo: 'Error al guardar',
-          mensaje: 'No se pudo guardar el evento. Por favor, intenta nuevamente.'
+          titulo: 'Error al procesar evento',
+          mensaje: 'No se pudo guardar o actualizar el evento. Por favor, intenta nuevamente.'
+        });
+      }
+    },
+    
+    // Método para eliminar un evento
+    async eliminarEvento(id) {
+      try {
+        await deleteEvento(id);
+        // Eliminar el evento del array local
+        this.eventos = this.eventos.filter(evento => evento.id !== id);
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Evento eliminado',
+          mensaje: 'El evento ha sido eliminado correctamente.'
+        });
+      } catch (error) {
+        console.error('Error eliminando evento:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al eliminar',
+          mensaje: 'No se pudo eliminar el evento. Por favor, intenta nuevamente.'
         });
       }
     },
     
     async guardarRecordatorio(recordatorio) {
       try {
-        // Crear recordatorio en el backend
-        const recordatorioGuardado = await createRecordatorio(recordatorio);
-        this.recordatorios.push(recordatorioGuardado);
-        console.log('Recordatorio guardado:', recordatorioGuardado);
-        this.cerrarModalRecordatorio();
+        console.log('Recordatorio recibido:', recordatorio);
         
-        // Mostrar notificación de éxito
-        this.mostrarNotificacion({
-          tipo: 'exito',
-          titulo: 'Recordatorio guardado',
-          mensaje: 'Tu recordatorio se ha guardado correctamente. Puedes verlo en tu perfil.'
-        });
+        // Si estamos en modo edición, actualizamos el recordatorio existente
+        if (this.modoEdicion && this.recordatorioEnEdicion) {
+          // Aseguramos que el recordatorio tenga el ID correcto
+          recordatorio.id = this.recordatorioEnEdicion.id;
+          const recordatorioActualizado = await updateRecordatorio(recordatorio.id, recordatorio);
+          
+          // Actualizamos el recordatorio en el array local
+          const index = this.recordatorios.findIndex(r => r.id === recordatorioActualizado.id);
+          if (index !== -1) {
+            this.recordatorios.splice(index, 1, recordatorioActualizado);
+          }
+          
+          // Resetear estado de edición
+          this.modoEdicion = false;
+          this.recordatorioEnEdicion = null;
+          
+          this.cerrarModalRecordatorio();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Recordatorio actualizado',
+            mensaje: 'Tu recordatorio se ha actualizado correctamente. Puedes verlo en tu perfil.'
+          });
+        } else {
+          // Es un nuevo recordatorio
+          const recordatorioGuardado = await createRecordatorio(recordatorio);
+          this.recordatorios.push(recordatorioGuardado); // Añadir nuevo recordatorio a la lista
+          console.log('Recordatorio guardado:', recordatorioGuardado);
+          this.cerrarModalRecordatorio();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Recordatorio guardado',
+            mensaje: 'Tu recordatorio se ha guardado correctamente. Puedes verlo en tu perfil.'
+          });
+        }
       } catch (error) {
-        console.error('Error al guardar recordatorio:', error);
+        console.error('Error al guardar/actualizar recordatorio:', error);
         
         // Mostrar notificación de error
         this.mostrarNotificacion({
           tipo: 'error',
-          titulo: 'Error al guardar',
-          mensaje: 'No se pudo guardar el recordatorio. Por favor, intenta nuevamente.'
+          titulo: 'Error al procesar recordatorio',
+          mensaje: 'No se pudo guardar o actualizar el recordatorio. Por favor, intenta nuevamente.'
+        });
+      }
+    },
+    
+    // Método para eliminar un recordatorio
+    async eliminarRecordatorio(id) {
+      try {
+        await deleteRecordatorio(id);
+        // Eliminar el recordatorio del array local
+        this.recordatorios = this.recordatorios.filter(recordatorio => recordatorio.id !== id);
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Recordatorio eliminado',
+          mensaje: 'El recordatorio ha sido eliminado correctamente.'
+        });
+      } catch (error) {
+        console.error('Error eliminando recordatorio:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al eliminar',
+          mensaje: 'No se pudo eliminar el recordatorio. Por favor, intenta nuevamente.'
         });
       }
     },
     async guardarContacto(contacto) {
       try {
-        console.log('Nuevo contacto recibido:', contacto);
-        // Crear contacto en el backend
-        const contactoGuardado = await createContacto(contacto);
-        this.contactos.push(contactoGuardado);
-        this.cerrarModalContacto();
+        console.log('Contacto recibido:', contacto);
         
-        // Mostrar notificación de éxito
-        this.mostrarNotificacion({
-          tipo: 'exito',
-          titulo: 'Contacto guardado',
-          mensaje: 'Tu contacto se ha guardado correctamente. Puedes verlo en tu perfil.'
-        });
+        // Si estamos en modo edición, actualizamos el contacto existente
+        if (this.modoEdicion && this.contactoEnEdicion) {
+          // Aseguramos que el contacto tenga el ID correcto
+          contacto.id = this.contactoEnEdicion.id;
+          const contactoActualizado = await updateContacto(contacto.id, contacto);
+          
+          // Actualizamos el contacto en el array local
+          const index = this.contactos.findIndex(c => c.id === contactoActualizado.id);
+          if (index !== -1) {
+            this.contactos.splice(index, 1, contactoActualizado);
+          }
+          
+          // Resetear estado de edición
+          this.modoEdicion = false;
+          this.contactoEnEdicion = null;
+          
+          this.cerrarModalContacto();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Contacto actualizado',
+            mensaje: 'Tu contacto se ha actualizado correctamente. Puedes verlo en tu perfil.'
+          });
+        } else {
+          // Es un nuevo contacto
+          const contactoGuardado = await createContacto(contacto);
+          this.contactos.push(contactoGuardado);
+          this.cerrarModalContacto();
+          
+          // Mostrar notificación de éxito
+          this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: 'Contacto guardado',
+            mensaje: 'Tu contacto se ha guardado correctamente. Puedes verlo en tu perfil.'
+          });
+        }
       } catch (error) {
-        console.error('Error al guardar contacto:', error);
+        console.error('Error al guardar/actualizar contacto:', error);
         
         // Mostrar notificación de error
         this.mostrarNotificacion({
           tipo: 'error',
-          titulo: 'Error al guardar',
-          mensaje: 'No se pudo guardar el contacto. Por favor, intenta nuevamente.'
+          titulo: 'Error al procesar contacto',
+          mensaje: 'No se pudo guardar o actualizar el contacto. Por favor, intenta nuevamente.'
+        });
+      }
+    },
+    
+    // Método para eliminar un contacto
+    async eliminarContacto(id) {
+      try {
+        await deleteContacto(id);
+        // Eliminar el contacto del array local
+        this.contactos = this.contactos.filter(contacto => contacto.id !== id);
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Contacto eliminado',
+          mensaje: 'El contacto ha sido eliminado correctamente.'
+        });
+      } catch (error) {
+        console.error('Error eliminando contacto:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al eliminar',
+          mensaje: 'No se pudo eliminar el contacto. Por favor, intenta nuevamente.'
         });
       }
     },

@@ -56,7 +56,7 @@
                 <button class="btn-accion editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-accion eliminar">
+                <button class="btn-accion eliminar" @click="$emit('eliminar-contacto', contacto.id)">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
@@ -93,7 +93,7 @@
                 <button class="btn-accion editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-accion eliminar">
+                <button class="btn-accion eliminar" @click="$emit('eliminar-evento', evento.id)">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
@@ -138,7 +138,7 @@
                 <button class="btn-accion editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-accion eliminar">
+                <button class="btn-accion eliminar" @click="$emit('eliminar-recordatorio', recordatorio.id)">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
