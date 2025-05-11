@@ -14,6 +14,15 @@
       <div class="app-container">
         <!-- Barra lateral con botones -->
         <div class="sidebar">
+          <!-- Mini calendario para navegación rápida -->
+          <div class="sidebar-section mini-calendar-wrapper">
+            <MiniCalendario 
+              :eventos="eventos" 
+              :recordatorios="recordatorios"
+              @seleccionar-fecha="manejarSeleccionFecha"
+            />
+          </div>
+          
           <!-- Contenedor para los botones de "Agregar" -->
           <div class="sidebar-section">
             <h3 class="sidebar-title">Agregar</h3>
@@ -53,8 +62,13 @@
         
         <!-- Contenido principal con calendario -->
         <div class="main-area">
-          <!-- ✅ Calendario muestra eventos desde el backend -->
-          <CalendarioInteractivo :events="eventos" />
+          <!-- Calendario interactivo que permite crear eventos y recordatorios al hacer clic en una fecha -->
+          <CalendarioInteractivo 
+            ref="calendarioInteractivoRef"
+            :events="eventos" 
+            @crear-evento="abrirModalEventoDesdeCalendario" 
+            @crear-recordatorio="abrirModalRecordatorioDesdeCalendario"
+          />
         </div>
       </div>
 
@@ -102,6 +116,16 @@
     <div class="footer-wrapper" v-if="isLoggedIn">
       <Footer />
     </div>
+    
+    <!-- Sistema de notificaciones -->
+    <Notificacion
+      :mostrar="notificacion.mostrar"
+      :tipo="notificacion.tipo"
+      :titulo="notificacion.titulo"
+      :mensaje="notificacion.mensaje"
+      :duracion="notificacion.duracion"
+      @cerrar="cerrarNotificacion"
+    />
   </div>  
 </template>
 
@@ -118,9 +142,11 @@ import CalendarioInteractivo from './CalendarioInteractivo.vue';
 import RecordatorioModal from './RecordatorioModal.vue';
 import Recordatorios from './Recordatorios.vue';
 import PerfilSimpleNuevo from './PerfilSimpleNuevo.vue';
-import { createRecordatorio, getRecordatorios } from '@/services/recordatorioServices'; //importar los gets para recordatorios
-import { getEventos } from '@/services/eventoServices'; //  Importar servicio de eventos
-import { getContactos, deleteContacto, updateContacto } from '@/services/contactoServices'; //import de los gets de contactos
+import MiniCalendario from './MiniCalendario.vue';
+import { createRecordatorio, getRecordatorios } from '@/services/recordatorioServices'; 
+import { createEvento, getEventos } from '@/services/eventoServices'; 
+import { createContacto, getContactos } from '@/services/contactoServices'; 
+import Notificacion from './Notificacion.vue';
 
 export default {
   components: {
@@ -134,8 +160,10 @@ export default {
     FormularioRecordatorio,
     CalendarioInteractivo,
     RecordatorioModal,
+    Notificacion,
     Recordatorios,
-    PerfilSimpleNuevo
+    PerfilSimpleNuevo,
+    MiniCalendario
   },
   data() {
     return {
@@ -147,11 +175,18 @@ export default {
       mostrarModalContacto: false,
       mostrarModalEvento: false,
       mostrarModalRecordatorio: false,
+
       mostrarRecordatorios: false,
-      FormularioContacto: false,
-      mostrarFormularioContacto: false,
       recordatorios: [],
-      mostrarPerfil: true
+      mostrarPerfil: false,
+      // Sistema de notificaciones
+      notificacion: {
+        mostrar: false,
+        tipo: 'exito',
+        titulo: '',
+        mensaje: '',
+        duracion: 5000
+      }
     };
   },
   mounted() {
@@ -212,6 +247,9 @@ export default {
       });
     },
     mostrarEventosModal() {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
       this.mostrarEventos = true;
     },
     mostrarFormularioRecordatorio() {
@@ -220,15 +258,60 @@ export default {
       // Luego mostramos el modal actual
       this.mostrarModalRecordatorio = true;
     },
+    
+    // Método para abrir formulario de evento con fecha seleccionada desde el calendario
+    abrirModalEventoDesdeCalendario(fecha) {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal de evento
+      this.mostrarModalEvento = true;
+      
+      // Dar tiempo para que el componente se renderice
+      this.$nextTick(() => {
+        if (this.$refs.formularioEventoRef) {
+          // Formateamos la fecha para el formato esperado por el formulario
+          const date = new Date(fecha);
+          const fechaFormateada = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          
+          // Pasamos la fecha preseleccionada al componente del formulario
+          this.$refs.formularioEventoRef.preseleccionarFecha(fechaFormateada);
+        }
+      });
+    },
+    
+    // Método para abrir formulario de recordatorio con fecha seleccionada desde el calendario
+    abrirModalRecordatorioDesdeCalendario(fecha) {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal de recordatorio
+      this.mostrarModalRecordatorio = true;
+      
+      // Dar tiempo para que el componente se renderice
+      this.$nextTick(() => {
+        // Formateamos la fecha para el formato esperado por el formulario
+        const date = new Date(fecha);
+        const fechaFormateada = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        
+        // Pasamos la fecha al estado para que el formulario la use
+        // Nota: Aquí deberías adaptar esto según la implementación real de tu formulario de recordatorios
+        if (this.$refs.formularioRecordatorioRef) {
+          this.$refs.formularioRecordatorioRef.preseleccionarFecha(fechaFormateada);
+        }
+      });
+    },
     cerrarModalRecordatorio() {
       this.mostrarModalRecordatorio = false;
       this.limpiarResidualModal();
     },
     mostrarRecordatoriosModal() {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
       this.mostrarRecordatorios = true;
     },
     cerrarRecordatoriosModal() {
       this.mostrarRecordatorios = false;
+      this.limpiarResidualModal();
     },
     cerrarModalContacto() {
       this.mostrarModalContacto = false;
@@ -239,51 +322,114 @@ export default {
       this.limpiarResidualModal();
     },
     mostrarContactosModal() {
+      // Primero limpiamos cualquier residuo de modal anterior
+      this.limpiarResidualModal();
+      // Luego mostramos el modal actual
       this.mostrarContactos = true;
     },
     cerrarContactosModal() {
       this.mostrarContactos = false;
+      this.limpiarResidualModal();
     },
     cerrarEventosModal() {
       this.mostrarEventos = false;
+      this.limpiarResidualModal();
     },
     // Guardar nuevo evento
     async guardarEvento(evento) {
-      this.eventos.push(evento); // Añadir nuevo evento a la lista
-      console.log('Evento guardado:', evento);
-      this.cerrarModalEvento();
+      try {
+        // Crear evento en el backend
+        const eventoGuardado = await createEvento(evento);
+        this.eventos.push(eventoGuardado); // Añadir nuevo evento a la lista
+        console.log('Evento guardado:', eventoGuardado);
+        this.cerrarModalEvento();
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Evento guardado',
+          mensaje: 'Tu evento se ha guardado correctamente. Puedes verlo en tu perfil.'
+        });
+      } catch (error) {
+        console.error('Error al guardar evento:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al guardar',
+          mensaje: 'No se pudo guardar el evento. Por favor, intenta nuevamente.'
+        });
+      }
     },
+    
     async guardarRecordatorio(recordatorio) {
-      this.recordatorios.push(recordatorio);
-      console.log('Recordatorio guardado:', recordatorio)
-      this.cerrarModalRecordatorio();
+      try {
+        // Crear recordatorio en el backend
+        const recordatorioGuardado = await createRecordatorio(recordatorio);
+        this.recordatorios.push(recordatorioGuardado);
+        console.log('Recordatorio guardado:', recordatorioGuardado);
+        this.cerrarModalRecordatorio();
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Recordatorio guardado',
+          mensaje: 'Tu recordatorio se ha guardado correctamente. Puedes verlo en tu perfil.'
+        });
+      } catch (error) {
+        console.error('Error al guardar recordatorio:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al guardar',
+          mensaje: 'No se pudo guardar el recordatorio. Por favor, intenta nuevamente.'
+        });
+      }
     },
     async guardarContacto(contacto) {
-      console.log('Nuevo contacto recibido:', contacto);
-      this.contactos.push(contacto);
-      this.cerrarContactosModal();
-    },
-    async eliminarContacto(id) {
       try {
-        await deleteContacto(id);
-        this.contactos = this.contactos.filter(contacto => contacto.id !== id);
+        console.log('Nuevo contacto recibido:', contacto);
+        // Crear contacto en el backend
+        const contactoGuardado = await createContacto(contacto);
+        this.contactos.push(contactoGuardado);
+        this.cerrarModalContacto();
+        
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+          tipo: 'exito',
+          titulo: 'Contacto guardado',
+          mensaje: 'Tu contacto se ha guardado correctamente. Puedes verlo en tu perfil.'
+        });
       } catch (error) {
-        console.error('Error eliminando contacto:', error);
+        console.error('Error al guardar contacto:', error);
+        
+        // Mostrar notificación de error
+        this.mostrarNotificacion({
+          tipo: 'error',
+          titulo: 'Error al guardar',
+          mensaje: 'No se pudo guardar el contacto. Por favor, intenta nuevamente.'
+        });
       }
     },
-    async editarContacto(contactoActualizado) {
-      try {
-        const contacto = await updateContacto(contactoActualizado.id, contactoActualizado);
-        const index = this.contactos.findIndex(c => c.id === contacto.id);
-        if (index !== -1) {
-          this.contactos.splice(index, 1, contacto);
-        }
-      } catch (error) {
-        console.error('Error actualizando contacto:', error);
-      }
-    },
+
     mostrarPerfilUsuario() {
+      // Limpiamos cualquier modal o estado residual antes de mostrar el perfil
+      this.limpiarResidualModal();
+      
+      // Desactivamos cualquier otro modal o vista que pueda estar activa
+      this.mostrarContactos = false;
+      this.mostrarEventos = false;
+      this.mostrarRecordatorios = false;
+      this.mostrarModalContacto = false;
+      this.mostrarModalEvento = false;
+      this.mostrarModalRecordatorio = false;
+      
+      // Activamos la vista de perfil
       this.mostrarPerfil = true;
+      
+      // Nos aseguramos de que el scroll esté al inicio
+      window.scrollTo(0, 0);
     },
     cerrarPerfilUsuario() {
       this.mostrarPerfil = false;
@@ -291,32 +437,56 @@ export default {
     },
     
     //  limpiar residuales de modales
+    // Métodos para el sistema de notificaciones
+    mostrarNotificacion({ tipo = 'exito', titulo = '', mensaje = '', duracion = 5000 }) {
+      this.notificacion = {
+        mostrar: true,
+        tipo,
+        titulo,
+        mensaje,
+        duracion
+      };
+    },
+    
+    cerrarNotificacion() {
+      this.notificacion.mostrar = false;
+    },
+    
     limpiarResidualModal() {
       // Eliminar la clase modal-open del body
       document.body.classList.remove('modal-open');
       
       // Eliminar cualquier backdrop modal que pueda quedar
-      const backdrops = document.getElementsByClassName('modal-backdrop');
-      while(backdrops.length > 0) {
-        backdrops[0].parentNode.removeChild(backdrops[0]);
-      }
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => {
+        if (backdrop) backdrop.remove();
+      });
       
-      // Eliminar cualquier modal que quede en el DOM
-      const modals = document.querySelectorAll('.modal');
+      // Eliminar cualquier modal que quede en el DOM con clase 'modal' y 'show'
+      const modals = document.querySelectorAll('.modal.show');
       modals.forEach(modal => {
-        if (modal && modal.style) {
-          modal.style.display = 'none';
+        if (modal && !modal.getAttribute('data-preserve')) {
           modal.classList.remove('show');
-          modal.setAttribute('aria-hidden', 'true');
-          modal.removeAttribute('aria-modal');
-          modal.removeAttribute('role');
+          modal.style.display = 'none';
         }
       });
       
       // Desbloquear el scroll
-      document.body.style.overflow = '';
+      document.body.style.overflow = 'auto';
       document.body.style.paddingRight = '';
-    }
+    },
+    
+    // Método para manejar cuando se selecciona una fecha en el minicalendario
+    manejarSeleccionFecha(fecha) {
+      console.log('Fecha seleccionada en minicalendario:', fecha);
+      
+      // Abre el modal para seleccionar entre evento y recordatorio
+      if (this.$refs.calendarioInteractivoRef) {
+        // Creamos un objeto similar al que espera el método handleDateClick
+        const info = { date: fecha };
+        this.$refs.calendarioInteractivoRef.handleDateClick(info);
+      }
+    },
   }
 };
 </script>
@@ -355,13 +525,12 @@ export default {
 
 /* Estilos para la barra lateral */
 .sidebar {
-  width: 250px;
-  min-width: 250px;
+  width: 220px;
+  min-width: 220px;
   background-color: var(--neutral-100);
   border-radius: 10px;
   box-shadow: var(--shadow-md);
   padding: 15px;
-  margin-top: 20px;
   border: 1px solid var(--neutral-300);
   align-self: flex-start;
   position: sticky;
@@ -371,6 +540,10 @@ export default {
 
 .sidebar-section {
   margin-bottom: 25px;
+}
+
+.mini-calendar-wrapper {
+  margin-bottom: 15px;
 }
 
 .sidebar-title {
@@ -383,18 +556,24 @@ export default {
 }
 
 .sidebar-btn {
-  display: block;
+  display: flex;
   width: 100%;
   padding: 12px 15px;
   margin-bottom: 10px;
   border-radius: 6px;
   font-weight: 500;
   font-size: 14px;
-  text-align: left;
+  text-align: center;
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-btn i {
+  margin-right: 8px;
 }
 
 .sidebar-btn:hover {
@@ -422,9 +601,6 @@ export default {
   background-color: var(--primary-color); /* Oxford Blue #1b263b */
   border: 2px solid var(--accent-color); /* Silver Lake Blue #778da9 */
   color: var(--text-light); /* Platinum #e0e1dd */
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .sidebar-btn.profile-btn:hover {

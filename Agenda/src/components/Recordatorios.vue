@@ -8,7 +8,7 @@
           </div>
           <div class="modal-body">
             <div v-if="recordatorios.length > 0" class="recordatorios-list">
-              <div v-for="(recordatorio, index) in recordatorios" :key="index" class="recordatorio-card">
+              <div v-for="(recordatorio, index) in recordatorios" :key="recordatorio.id || index" class="recordatorio-card">
                 <div class="recordatorio-info">
                   <div class="recordatorio-title">{{ recordatorio.name }}</div>
                   <div class="recordatorio-datetime">
@@ -19,16 +19,21 @@
                     <i class="far fa-envelope"></i> {{ recordatorio.email }}
                   </div>
                 </div>
-                <div class="recordatorio-details-section">
-                  <button @click="toggleDescription(index)" class="details-toggle" :class="{'expanded': isExpanded(index)}">
-                    <span v-if="!isExpanded(index)">Ver descripción</span>
-                    <span v-else>Ocultar</span>
+                <div class="recordatorio-actions">
+                  <button class="btn-accion editar">
+                    <i class="fas fa-edit"></i>
                   </button>
-                  <div v-if="isExpanded(index)" class="recordatorio-description">
+                  <button class="btn-accion eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                <div class="recordatorio-details-section">
+                  <div class="recordatorio-description">
                     <p v-if="recordatorio.description">{{ recordatorio.description }}</p>
-                    <p v-else class="empty-description">No hay descripción para este recordatorio</p>
+                    <p v-else class="empty-description">Sin descripción</p>
                   </div>
                 </div>
+
               </div>
             </div>
             <div v-else class="empty-list">
@@ -71,13 +76,160 @@
   </script>
   
   <style scoped>
+  .recordatorio-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-left: 4px solid #415a77; /* Yinmn Blue */
+  }
+
+  .recordatorio-info {
+    margin-bottom: 10px;
+  }
+
+  .recordatorio-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #1b263b; /* Oxford Blue */
+    margin-bottom: 8px;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .recordatorio-datetime {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 6px;
+  }
+
+  .recordatorio-date, .recordatorio-time, .recordatorio-email {
+    color: #415a77; /* Yinmn Blue */
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
+
+  .recordatorio-description {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 10px;
+    border-left: 3px solid #778da9; /* Silver Lake Blue */
+  }
+
+  .empty-description {
+    color: #999;
+    font-style: italic;
+  }
+
+  .recordatorio-actions {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .btn-accion {
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-accion.editar {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .btn-accion.eliminar {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  .btn-accion.editar:hover {
+    background-color: #bbdefb;
+  }
+
+  .btn-accion.eliminar:hover {
+    background-color: #ffcdd2;
+  }
+
+  /* Estilos para el modal de confirmación */
+  .confirmacion-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(27, 38, 59, 0.9); /* Oxford Blue con opacidad */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 10px;
+  }
+
+  .confirmacion-modal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 300px;
+    text-align: center;
+  }
+
+  .confirmacion-modal p {
+    margin-bottom: 15px;
+  }
+
+  .confirmacion-botones {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .btn-confirmar {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .btn-confirmar.confirmar {
+    background-color: #c62828;
+    color: white;
+  }
+
+  .btn-confirmar.cancelar {
+    background-color: #e0e1dd; /* Platinum */
+    color: #1b263b; /* Oxford Blue */
+  }
+
+  .btn-confirmar.confirmar:hover {
+    background-color: #b71c1c;
+  }
+
+  .btn-confirmar.cancelar:hover {
+    background-color: #c4c4c4;
+  }
+
   .modal-body {
     padding: 20px;
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
     background-color: #e0e1dd; /* Platinum de la paleta de NotiQ */
   }
-  
+
   .recordatorios-list {
     display: flex;
     flex-direction: column;

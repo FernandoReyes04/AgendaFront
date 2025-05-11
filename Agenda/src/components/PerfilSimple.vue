@@ -2,7 +2,6 @@
   <div class="perfil-page">
     <Header :enPerfil="true" @volver-agenda="$emit('volver')" />
     <div class="perfil-contenedor">
-    <Header :enPerfil="true" @volver-agenda="$emit('volver')" />
     
     <!-- Encabezado del perfil -->
     <div class="perfil-header">
@@ -62,13 +61,9 @@
                 </button>
               </div>
               <div class="contacto-notes-section">
-                <button @click="toggleContactoNotes(index)" class="notes-toggle" :class="{'expanded': isContactoExpanded(index)}">
-                  <span v-if="!isContactoExpanded(index)">Ver notas</span>
-                  <span v-else>Ocultar</span>
-                </button>
-                <div v-if="isContactoExpanded(index)" class="contacto-notes-content">
+                <div class="contacto-notes-content">
                   <p v-if="contacto.notes">{{ contacto.notes }}</p>
-                  <p v-else class="empty-notes">No hay notas para este contacto</p>
+                  <p v-else class="empty-notes">Sin notas</p>
                 </div>
               </div>
             </div>
@@ -103,13 +98,9 @@
                 </button>
               </div>
               <div class="evento-desc-section">
-                <button @click="toggleEventoDetails(index)" class="desc-toggle" :class="{'expanded': isEventoExpanded(index)}">
-                  <span v-if="!isEventoExpanded(index)">Ver descripción</span>
-                  <span v-else>Ocultar</span>
-                </button>
-                <div v-if="isEventoExpanded(index)" class="evento-desc-content">
+                <div class="evento-desc-content">
                   <p v-if="evento.description">{{ evento.description }}</p>
-                  <p v-else class="empty-desc">No hay descripción para este evento</p>
+                  <p v-else class="empty-desc">Sin descripción</p>
                 </div>
               </div>
             </div>
@@ -152,11 +143,9 @@
                 </button>
               </div>
               <div class="recordatorio-desc-section">
-                <button @click="toggleRecordatorioDetails(index)" class="desc-toggle" :class="{'expanded': isRecordatorioExpanded(index)}">
-                  <span v-if="!isRecordatorioExpanded(index)">Ver descripción</span>
-                  <span v-else>Ocultar</span>
-                </button>
-                <div v-if="isRecordatorioExpanded(index)" class="recordatorio-desc-content">
+                <div class="recordatorio-desc-content">
+                  <p v-if="recordatorio.description">{{ recordatorio.description }}</p>
+                  <p v-else class="empty-desc">Sin notas</p>
                 </div>
               </div>
             </div>

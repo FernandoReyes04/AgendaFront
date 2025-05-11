@@ -175,20 +175,24 @@ export default {
       }
       
       try {
-        const nuevoContacto = {
+        const contactoData = {
           first_name: this.contacto.first_name,
           last_name: this.contacto.last_name,
           phone_number: this.contacto.phone_number,
           email: this.contacto.email,
           notes: this.contacto.notes,
+        };
+        
+        // Si estamos editando, incluimos el ID
+        if (this.editando && this.contacto.id) {
+          contactoData.id = this.contacto.id;
         }
 
-        // ✅ Guardar contacto en el backend
-        const contactoGuardado = await createContacto(nuevoContacto);
-        console.log('Contacto guardado:', contactoGuardado);
+        // Emitimos al componente padre para que él maneje la creación/actualización
+        this.$emit('guardar', contactoData);
 
-        // ✅ Emitir el evento para actualizar la lista en el componente padre
-        this.$emit('guardar', contactoGuardado);
+        // Reseteamos el modo de edición
+        this.editando = false;
 
         // ✅ Cerrar el modal
         const modal = Modal.getInstance(document.getElementById('contactoModal'));
@@ -199,8 +203,45 @@ export default {
       }
     },
     showModal() {
-      const modal = new Modal(document.getElementById('contactoModal'));
-      modal.show();
+      const modalElement = document.getElementById('contactoModal');
+      
+      if (modalElement) {
+        // Configuramos el modal para que se cierre al hacer clic fuera
+        this.modal = new Modal(modalElement, {
+          backdrop: true,    // true = cierra al hacer clic fuera
+          keyboard: true     // true = cierra al presionar ESC
+        });
+        this.modal.show();
+        
+        // Agregar un listener para cerrar el modal al hacer clic fuera (adicional a backdrop)
+        modalElement.addEventListener('click', (event) => {
+          // Verificar si el clic fue en el fondo del modal y no en su contenido
+          if (event.target === modalElement) {
+            this.$emit('cerrar');
+          }
+        });
+      }
+    },
+    
+    // Método para establecer valores cuando editamos un contacto existente
+    establecerValoresEdicion(contacto) {
+      this.editando = true;
+      
+      // Cambiamos el título del modal
+      const modalLabel = document.getElementById('contactoModalLabel');
+      if (modalLabel) {
+        modalLabel.innerText = 'Editar Contacto';
+      }
+      
+      // Asignamos los valores del contacto a editar
+      this.contacto = {
+        id: contacto.id,
+        first_name: contacto.first_name || '',
+        last_name: contacto.last_name || '',
+        phone_number: contacto.phone_number || '',
+        email: contacto.email || '',
+        notes: contacto.notes || ''
+      };
     }
   },
   mounted() {

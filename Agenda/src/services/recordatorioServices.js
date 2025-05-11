@@ -22,7 +22,16 @@ export const getRecordatorios = async () => {
   }
 };
 
-// No actualiza un recordatorio porque no lo consideramos pertinente
+//  Actualizar un recordatorio
+export const updateRecordatorio = async (id, recordatorio) => {
+  try {
+    const response = await api.put(`/api/reminder/${id}`, recordatorio);
+    return response.data;
+  } catch (error) {
+    console.error('Error actualizando recordatorio:', error);
+    throw error;
+  }
+};
 
 //  Eliminar un recordatorio
 export const deleteRecordatorio = async (id) => {

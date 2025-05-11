@@ -34,10 +34,37 @@
         </div>
       </div>
 
+      <!-- Navegación por pestañas -->
+      <div class="perfil-nav">
+        <div class="nav-tabs">
+          <button 
+            class="nav-tab" 
+            :class="{ 'active': seccionActiva === 'contactos' }" 
+            @click="cambiarSeccion('contactos')"
+          >
+            <i class="fas fa-address-book"></i> Mis Contactos
+          </button>
+          <button 
+            class="nav-tab" 
+            :class="{ 'active': seccionActiva === 'eventos' }" 
+            @click="cambiarSeccion('eventos')"
+          >
+            <i class="fas fa-calendar-alt"></i> Mis Eventos
+          </button>
+          <button 
+            class="nav-tab" 
+            :class="{ 'active': seccionActiva === 'recordatorios' }" 
+            @click="cambiarSeccion('recordatorios')"
+          >
+            <i class="fas fa-bell"></i> Mis Recordatorios
+          </button>
+        </div>
+      </div>
+      
       <!-- Contenido principal con listas directas -->
       <div class="perfil-content">
         <!-- SECCIÓN DE CONTACTOS -->
-        <div class="seccion-lista">
+        <div class="seccion-lista" v-show="seccionActiva === 'contactos'">
           <h3 class="seccion-titulo"><i class="fas fa-address-book"></i> Mis Contactos</h3>
           
           <div class="lista-elementos">
@@ -80,7 +107,7 @@
         </div>
 
         <!-- SECCIÓN DE EVENTOS -->
-        <div class="seccion-lista">
+        <div class="seccion-lista" v-show="seccionActiva === 'eventos'">
           <h3 class="seccion-titulo"><i class="fas fa-calendar-alt"></i> Mis Eventos</h3>
           
           <div class="lista-elementos">
@@ -126,7 +153,7 @@
         </div>
 
         <!-- SECCIÓN DE RECORDATORIOS -->
-        <div class="seccion-lista">
+        <div class="seccion-lista" v-show="seccionActiva === 'recordatorios'">
           <h3 class="seccion-titulo"><i class="fas fa-bell"></i> Mis Recordatorios</h3>
           
           <div class="lista-elementos">
@@ -217,12 +244,18 @@ export default {
   },
   data() {
     return {
+      seccionActiva: 'contactos',
       expandedContactoNotes: {},
       expandedEventoDetails: {},
       expandedRecordatorioDetails: {}
     };
   },
   methods: {
+    cambiarSeccion(seccion) {
+      this.seccionActiva = seccion;
+      // Volver al inicio de la sección cuando se cambia de pestaña
+      window.scrollTo(0, document.querySelector('.perfil-nav').offsetTop - 20);
+    },
     obtenerIniciales(nombre, apellido) {
       return (nombre ? nombre.charAt(0) : '') + (apellido ? apellido.charAt(0) : '');
     },
@@ -259,6 +292,52 @@ export default {
 </script>
 
 <style scoped>
+/* Estilos para la navegación por pestañas */
+.perfil-nav {
+  margin: 20px 0;
+  border-bottom: 2px solid #e0e1dd; /* Platinum */
+}
+
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.nav-tab {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e1dd;
+  border-bottom: none;
+  color: #415a77; /* Yinmn Blue */
+  font-weight: 500;
+  padding: 12px 25px;
+  cursor: pointer;
+  border-radius: 10px 10px 0 0;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  top: 2px;
+}
+
+.nav-tab:hover {
+  background-color: #e9ecef;
+  color: #1b263b; /* Oxford Blue */
+}
+
+.nav-tab.active {
+  background-color: #1b263b; /* Oxford Blue */
+  color: #e0e1dd; /* Platinum */
+  border-color: #1b263b;
+  z-index: 1;
+}
+
+.nav-tab i {
+  font-size: 1.1rem;
+}
+
 /* Estilos generales */
 .perfil-page {
   width: 100%;

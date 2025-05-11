@@ -49,44 +49,28 @@
           </div>
           <div class="mb-3">
             <label for="fecha" class="form-label">Fecha</label>
-            <div class="date-picker-container">
-              <input 
-                type="date" 
-                id="fecha" 
-                v-model="recordatorio.date" 
-                class="form-control custom-input date-input"
-                :class="{ 'is-invalid': fechaError }"
-                @change="validarFecha"
-              >
-              <div class="calendar-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"/>
-                  <path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                </svg>
-              </div>
-            </div>
+            <input 
+              type="date" 
+              id="fecha" 
+              v-model="recordatorio.date" 
+              class="form-control custom-input"
+              :class="{ 'is-invalid': fechaError }"
+              @change="validarFecha"
+            >
             <div class="invalid-feedback" v-if="fechaError">
               {{ fechaError }}
             </div>
           </div>
           <div class="mb-3">
             <label for="hora" class="form-label">Hora</label>
-            <div class="time-picker-container">
-              <input 
-                type="time" 
-                id="hora" 
-                v-model="recordatorio.hour" 
-                class="form-control custom-input time-input"
-                :class="{ 'is-invalid': horaError }"
-                @change="validarHora"
-              >
-              <div class="clock-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                </svg>
-              </div>
-            </div>
+            <input 
+              type="time" 
+              id="hora" 
+              v-model="recordatorio.hour" 
+              class="form-control custom-input"
+              :class="{ 'is-invalid': horaError }"
+              @change="validarHora"
+            >
             <div class="invalid-feedback" v-if="horaError">
               {{ horaError }}
             </div>
@@ -119,6 +103,7 @@ export default {
       emailError: '',
       fechaError: '',
       horaError: '',
+      editando: false,
       modal: null
     };
   },
@@ -176,9 +161,39 @@ export default {
     validarHora() {
       if (!this.recordatorio.hour) {
         this.horaError = 'Debe seleccionar una hora';
-      } else {
-        this.horaError = '';
+        return;
       }
+      
+      // Verificar si la fecha seleccionada es hoy
+      const fechaActual = new Date();
+      const fechaSeleccionada = new Date(this.recordatorio.date);
+      
+      // Verificar si las fechas son iguales (mismo día)
+      const sonMismoDia = (
+        fechaSeleccionada.getDate() === fechaActual.getDate() &&
+        fechaSeleccionada.getMonth() === fechaActual.getMonth() &&
+        fechaSeleccionada.getFullYear() === fechaActual.getFullYear()
+      );
+      
+      // Si es el mismo día, verificar que la hora no sea anterior a la actual
+      if (sonMismoDia) {
+        const horaActual = fechaActual.getHours();
+        const minutosActuales = fechaActual.getMinutes();
+        
+        // Obtener hora y minutos seleccionados
+        const [horaSeleccionada, minutosSeleccionados] = this.recordatorio.hour.split(':').map(Number);
+        
+        // Convertir a minutos totales para comparación más fácil
+        const minutosActualesTotales = (horaActual * 60) + minutosActuales;
+        const minutosSeleccionadosTotales = (horaSeleccionada * 60) + minutosSeleccionados;
+        
+        if (minutosSeleccionadosTotales < minutosActualesTotales) {
+          this.horaError = 'No es posible programar recordatorios en horas pasadas';
+          return;
+        }
+      }
+      
+      this.horaError = '';
     },
     
     validarFormulario() {
@@ -197,18 +212,99 @@ export default {
       }
       
       try {
-        await createRecordatorio(this.recordatorio);
-        this.$emit('guardar', this.recordatorio);
+        // Crear objeto para guardar
+        const recordatorioParaGuardar = {
+          name: this.recordatorio.name,
+          description: this.recordatorio.description,
+          date: this.recordatorio.date,
+          hour: this.recordatorio.hour,
+          email: this.recordatorio.email
+        };
         
-        // Cerrar el modal usando la instancia
-        if (this.modal) {
-          this.modal.hide();
+        // Si estamos editando, incluir el ID
+        if (this.editando && this.recordatorio.id) {
+          recordatorioParaGuardar.id = this.recordatorio.id;
         }
+        
+        this.$emit('guardar', recordatorioParaGuardar);
+        
+        // Resetear el modo edición
+        this.editando = false;
         
         this.$emit('cerrar');
       } catch (error) {
-        console.error('Error guardando recordatorio:', error);
+        console.error('Error al guardar recordatorio:', error);
       }
+    },
+    
+    // Método para inicializar y mostrar el modal
+    showModal() {
+      // Asegurarse de que el elemento existe antes de inicializar el modal
+      const modalElement = document.getElementById('recordatorioModal');
+      if (modalElement) {
+        // Configuramos el modal para que se cierre al hacer clic fuera
+        this.modal = new Modal(modalElement, {
+          backdrop: true,    // true = cierra al hacer clic fuera
+          keyboard: true     // true = cierra al presionar ESC
+        });
+        this.modal.show();
+
+        // Agregar un listener para cerrar el modal al hacer clic fuera (adicional a backdrop)
+        modalElement.addEventListener('click', (event) => {
+          // Verificar si el clic fue en el fondo del modal y no en su contenido
+          if (event.target === modalElement) {
+            this.$emit('cerrar');
+          }
+        });
+      } else {
+        console.error('El elemento recordatorioModal no se encontró en el DOM');
+      }
+    },
+    
+    // Método para preseleccionar una fecha cuando se viene desde el calendario
+    preseleccionarFecha(fecha) {
+      if (fecha) {
+        // Establecer la fecha del recordatorio
+        this.recordatorio.date = fecha;
+        
+        // Ahora vamos a configurar la hora predeterminada
+        // Si la hora actual está entre 9 AM y 5 PM, usamos la hora actual
+        // Si no, establecemos las 12:00 PM como hora predeterminada
+        const ahora = new Date();
+        let hora = ahora.getHours();
+        let minutos = ahora.getMinutes();
+        
+        // Si estamos fuera del horario laboral, establecer a 12:00 PM
+        if (hora < 9 || hora > 17) {
+          hora = 12;
+          minutos = 0;
+        }
+        
+        // Formatear la hora para el input time (HH:MM)
+        const horaFormateada = `${hora.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+        this.recordatorio.hour = horaFormateada;
+      }
+    },
+    
+    // Método para establecer valores cuando editamos un recordatorio existente
+    establecerValoresEdicion(recordatorio) {
+      this.editando = true;
+      
+      // Cambiamos el título del modal
+      const modalLabel = document.getElementById('recordatorioModalLabel');
+      if (modalLabel) {
+        modalLabel.innerText = 'Editar Recordatorio';
+      }
+      
+      // Asignamos los valores del recordatorio a editar
+      this.recordatorio = {
+        id: recordatorio.id,
+        name: recordatorio.name || '',
+        description: recordatorio.description || '',
+        date: recordatorio.date || '',
+        hour: recordatorio.hour || '',
+        email: recordatorio.email || ''
+      };
     }
   },
   mounted() {
