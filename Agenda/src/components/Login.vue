@@ -1,7 +1,7 @@
 <template>
     <div class="login-container">
       <div class="login-box">
-        <h2>Agenda</h2>
+        <h2>NotiQ</h2>
         <h1>Bienvenido</h1>
         <div class="input-group">
           <label for="username">Nombre de usuario</label>
@@ -12,6 +12,10 @@
           <input type="password" id="password" v-model="password" placeholder="Contraseña">
         </div>
         <button class="login-button" @click="login">Ingresar</button>
+        <button class="google-login-button" @click="loginWithGoogle">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/640px-Google_Chrome_icon_%28February_2022%29.svg.png" alt="Google Chrome logo" class="google-icon">
+          <span>Iniciar con Google</span>
+        </button>
         <button class="create-user-button" @click="mostrarModalCrearUsuario">Crear Usuario</button>
         <button class="skip-login-button" @click="skipLogin">Continuar sin iniciar sesión</button>
       </div>
@@ -51,7 +55,7 @@
         nuevoUsername: '',
         nuevaPassword: '',
         confirmarPassword: '',
-        usuarios: [] // almacenamiento temporal de usuarios en lo que se conecta al back
+        usuarios: [] // almacenamiento temporal de usuarios en lo que se conecta al back    ---->PD: cuando se integre se tendra que hacer una confirmacion de estado 
       };
     },
     computed: {
@@ -72,15 +76,13 @@
         this.$emit('login-success');
       },
       login() {
-        // esta en comentario pq si no se deberia de iniciar sesiona cada rato y da flojera
-        // const usuario = this.usuarios.find(u => u.username === this.username && u.password === this.password);
-        // if (usuario) {
-          console.log('Inicio de sesión exitoso');
-          this.$emit('login-success');
-        // } else {
-        //   console.log('Usuario o contraseña incorrectos');
-        //   alert('Usuario o contraseña incorrectos');
-        // }
+        // metodo para autenticación estándar con usuario y contraseña
+        this.$emit('login-success');
+      },
+      loginWithGoogle() {
+        // este método iniciaría el flujo de autenticación con Google OAuth 2.0
+        console.log('Iniciando sesión con Google...');
+        this.$emit('login-success');
       },
       mostrarModalCrearUsuario() {
         this.mostrarCrearUsuario = true;
@@ -124,15 +126,16 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    /*background-color: #f0f0f0;*/
+    background-color: #e0e1dd; /* Platinum de la paleta */
   }
   
   .login-box {
-    background-color: var(--neutral-100);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: var(--shadow-md);
-    width: 300px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(13, 27, 42, 0.15);
+    width: 320px;
+    border-left: 4px solid #415a77; /* Yinmn Blue */
   }
   
   h2 {
@@ -166,41 +169,83 @@
   }
   
   .login-button {
-    background-color: var(--primary-color);
-    color: var(--neutral-100);
+    width: 100%;
+    background-color: #1b263b; /* Oxford Blue */
+    color: #e0e1dd; /* Platinum */
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
     transition: all 0.3s ease;
+    font-weight: 500;
+    margin-bottom: 12px;
   }
   
   .login-button:hover {
-    background-color: var(--primary-dark);
+    background-color: #415a77; /* Yinmn Blue */
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 2px 10px rgba(27, 38, 59, 0.15);
+  }
+
+  .google-login-button {
+    width: 100%;
+    background-color: white;
+    color: #444;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .google-login-button:hover {
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .google-icon {
+    width: 18px;
+    height: 18px;
   }
   
   .create-user-button {
-    background-color: var(--neutral-300);
-    color: var(--neutral-800);
+    width: 100%;
+    background-color: #415a77; /* Yinmn Blue */
+    color: #e0e1dd; /* Platinum */
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 12px;
     transition: all 0.3s ease;
+    font-weight: 500;
   }
   
   .create-user-button:hover {
-    background-color: var(--neutral-400);
+    background-color: #778da9; /* Silver Lake Blue */
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 10px rgba(65, 90, 119, 0.15);
   }
   
   .skip-login-button {
-    background-color: var(--secondary-color);
-    color: var(--neutral-100);
-    margin-top: 20px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    width: 100%;
+    background-color: transparent;
+    color: #415a77; /* Yinmn Blue */
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    text-decoration: underline;
   }
-  
+
   .skip-login-button:hover {
-    background-color: var(--secondary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    color: #778da9; /* Silver Lake Blue */
   }
   
   .modal-overlay {

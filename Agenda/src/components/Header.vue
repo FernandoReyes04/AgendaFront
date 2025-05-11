@@ -2,12 +2,14 @@
   <header class="header custom-header">
     <div class="container">
       <div class="header-left">
-        <button v-if="enPerfil" class="btn-volver custom-btn-volver" @click="volverAAgenda">
-          <i class="fas fa-arrow-left"></i> Volver a Agenda
-        </button>
         <h1 class="title custom-title">NotiQ</h1>
       </div>
-      <button class="login-btn custom-login-btn" @click="goToLogin">Iniciar Sesión</button>
+      <div class="header-actions">
+        <button v-if="enPerfil" class="btn-volver custom-btn-volver" @click="volverAAgenda" title="Volver a Agenda">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <button class="login-btn custom-login-btn" @click="goToLogin">Iniciar Sesión</button>
+      </div>
     </div>
   </header>
 </template>
@@ -34,7 +36,7 @@ export default {
 </script>
 
 <style scoped>
-/* Importar fuentes de Google Fonts */
+/* importar fuentes de google*/
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
 
 .header {
@@ -61,6 +63,12 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .title {
@@ -101,26 +109,26 @@ export default {
 /* Estilos para el botón de volver */
 .btn-volver {
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  font-weight: 500;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
 }
 
 .custom-btn-volver {
-  background-color: #778da9 !important; /* Silver Lake Blue hardcoded */
-  color: #e0e1dd !important; /* Platinum hardcoded */
+  background-color: #415a77 !important; /* Yinmn Blue */
+  color: #e0e1dd !important; /* Platinum */
   box-shadow: 0 1px 3px rgba(13, 27, 42, 0.12), 0 1px 2px rgba(13, 27, 42, 0.14) !important;
 }
 
 .btn-volver:hover {
-  background-color: var(--secondary-color); /* Yinmn Blue */
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #778da9 !important; /* Silver Lake Blue */
+  transform: translateX(-2px);
+  box-shadow: 0 2px 5px rgba(13, 27, 42, 0.2) !important;
 }
 
 /* Estilos para el botón de iniciar sesión */

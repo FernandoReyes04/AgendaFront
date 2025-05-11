@@ -75,7 +75,7 @@
     padding: 20px;
     max-height: 400px;
     overflow-y: auto;
-    background-color: var(--neutral-200);
+    background-color: #e0e1dd; /* Platinum de la paleta de NotiQ */
   }
   
   .recordatorios-list {
@@ -88,12 +88,12 @@
     display: flex;
     flex-direction: column;
     padding: 16px;
-    background-color: var(--neutral-100);
+    background-color: #ffffff;
     border-radius: 8px;
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid var(--primary-light);
-    transition: all 0.2s ease;
-    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(13, 27, 42, 0.12);
+    border-left: 4px solid #415a77; /* Yinmn Blue */
+    margin-bottom: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
   .recordatorio-card:hover {

@@ -1,7 +1,7 @@
 <template>
   <div class="home-container">
     <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
-    <PerfilUsuario 
+    <PerfilSimpleNuevo 
       v-else-if="mostrarPerfil" 
       @volver="cerrarPerfilUsuario"
       :contactos="contactos"
@@ -96,14 +96,7 @@
         @cerrar="cerrarRecordatoriosModal" 
       />
 
-      <!-- Perfil de Usuario -->
-      <PerfilUsuario
-        v-if="mostrarPerfil"
-        :contactos="this.contactos"
-        :eventos="this.eventos"
-        :recordatorios="this.recordatorios"
-        @cerrar="cerrarPerfilUsuario"
-      />
+      <!-- El perfil de usuario ya está renderizado en la parte superior del template -->
 
     </div>
     <div class="footer-wrapper" v-if="isLoggedIn">
@@ -116,18 +109,18 @@
 import Login from './Login.vue';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
-import FormularioContacto from './FormularioContacto.vue';
 import Contactos from './Contactos.vue';
+import FormularioContacto from './FormularioContacto.vue';
 import Eventos from './Eventos.vue';
 import FormularioEvento from './FormularioEvento.vue';
 import FormularioRecordatorio from './FormularioRecordatorio.vue';
 import CalendarioInteractivo from './CalendarioInteractivo.vue';
+import RecordatorioModal from './RecordatorioModal.vue';
+import Recordatorios from './Recordatorios.vue';
+import PerfilSimpleNuevo from './PerfilSimpleNuevo.vue';
 import { createRecordatorio, getRecordatorios } from '@/services/recordatorioServices'; //importar los gets para recordatorios
-import RecordatorioModal from './RecordatorioModal.vue'; // import del modal
-import Recordatorios from './Recordatorios.vue'; 
 import { getEventos } from '@/services/eventoServices'; //  Importar servicio de eventos
 import { getContactos, deleteContacto, updateContacto } from '@/services/contactoServices'; //import de los gets de contactos
-import PerfilUsuario from './PerfilUsuario.vue';
 
 export default {
   components: {
@@ -142,11 +135,11 @@ export default {
     CalendarioInteractivo,
     RecordatorioModal,
     Recordatorios,
-    PerfilUsuario
+    PerfilSimpleNuevo
   },
   data() {
     return {
-      isLoggedIn: true, // Modificado para saltar la pantalla de login
+      isLoggedIn: localStorage.getItem('userLoggedIn') === 'true' || false,
       eventos: [],
       contactos: [],
       mostrarContactos: false,
@@ -158,7 +151,7 @@ export default {
       FormularioContacto: false,
       mostrarFormularioContacto: false,
       recordatorios: [],
-      mostrarPerfil: false
+      mostrarPerfil: true
     };
   },
   mounted() {
@@ -190,9 +183,12 @@ export default {
   methods: {
     handleLoginSuccess() {
       this.isLoggedIn = true;
+      localStorage.setItem('userLoggedIn', 'true');
+      this.cargarComponentes();
     },
     showLogin() {
       this.isLoggedIn = false;
+      localStorage.removeItem('userLoggedIn');
     },
     mostrarFormularioContactoModal() {
       // Primero limpiamos cualquier residuo de modal anterior
@@ -294,7 +290,7 @@ export default {
       this.limpiarResidualModal();
     },
     
-    // Método centralizado para limpiar residuales de modales
+    //  limpiar residuales de modales
     limpiarResidualModal() {
       // Eliminar la clase modal-open del body
       document.body.classList.remove('modal-open');
@@ -326,7 +322,7 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos unificados */
+/* Contenedor principal de toda la aplicación */
 .home-container {
   display: flex;
   flex-direction: column;
@@ -334,7 +330,7 @@ export default {
   justify-content: flex-start;
   min-height: 100vh;
   width: 100%;
-  background-color: white;
+  background-color: #e0e1dd; /* Platinum de la paleta de NotiQ */
 }
 
 .main-content {
