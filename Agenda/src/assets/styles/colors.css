@@ -1,43 +1,43 @@
 :root {
-  /* Colores primarios */
-  --primary-color: #3949AB; /* Azul índigo */
-  --primary-dark: #303F9F;
-  --primary-light: #7986CB;
+  /* Colores primarios - Azules profundos */
+  --primary-color: #1b263b; /* Oxford Blue */
+  --primary-dark: #0d1b2a; /* Rich Black */
+  --primary-light: #415a77; /* Yinmn Blue */
   
-  /* Colores secundarios */
-  --secondary-color: #00BCD4; /* Cian */
-  --secondary-dark: #0097A7;
-  --secondary-light: #4DD0E1;
+  /* Colores secundarios - Azul medio */
+  --secondary-color: #415a77; /* Yinmn Blue */
+  --secondary-dark: #1b263b; /* Oxford Blue */
+  --secondary-light: #778da9; /* Silver Lake Blue */
   
-  /* Colores de acento */
-  --accent-color: #4CAF50; /* Verde */
-  --accent-dark: #388E3C;
-  --accent-light: #81C784;
+  /* Colores de acento - Azul claro */
+  --accent-color: #778da9; /* Silver Lake Blue */
+  --accent-dark: #415a77; /* Yinmn Blue */
+  --accent-light: #e0e1dd; /* Platinum */
   
   /* Colores neutrales */
   --neutral-100: #FFFFFF; /* Blanco */
-  --neutral-200: #F5F5F5; /* Gris muy claro */
-  --neutral-300: #E0E0E0; /* Gris claro */
-  --neutral-400: #BDBDBD; /* Gris medio claro */
+  --neutral-200: #e0e1dd; /* Platinum */
+  --neutral-300: #CCCECD; /* Platinum más oscuro */
+  --neutral-400: #B8BAB7; /* Gris claro */
   --neutral-500: #9E9E9E; /* Gris medio */
-  --neutral-600: #757575; /* Gris medio oscuro */
-  --neutral-700: #616161; /* Gris oscuro */
-  --neutral-800: #424242; /* Gris muy oscuro */
-  --neutral-900: #212121; /* Casi negro */
+  --neutral-600: #778da9; /* Silver Lake Blue */
+  --neutral-700: #415a77; /* Yinmn Blue */
+  --neutral-800: #1b263b; /* Oxford Blue */
+  --neutral-900: #0d1b2a; /* Rich Black */
   
   /* Colores de estado */
-  --success-color: #4CAF50; /* Verde */
-  --warning-color: #FFC107; /* Amarillo */
-  --error-color: #F44336; /* Rojo */
-  --info-color: #2196F3; /* Azul */
+  --success-color: #4a9375; /* Verde azulado */
+  --warning-color: #e6b89c; /* Melocotón claro */
+  --error-color: #c86464; /* Rojo apagado */
+  --info-color: #778da9; /* Silver Lake Blue */
   
   /* Colores de texto */
-  --text-primary: #212121; /* Texto principal - casi negro */
-  --text-secondary: #757575; /* Texto secundario - gris medio oscuro */
-  --text-light: #FFFFFF; /* Texto claro - para fondos oscuros */
+  --text-primary: #0d1b2a; /* Rich Black */
+  --text-secondary: #415a77; /* Yinmn Blue */
+  --text-light: #e0e1dd; /* Platinum */
   
   /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-sm: 0 1px 3px rgba(13, 27, 42, 0.12), 0 1px 2px rgba(13, 27, 42, 0.14);
+  --shadow-md: 0 3px 6px rgba(13, 27, 42, 0.15), 0 2px 4px rgba(13, 27, 42, 0.12);
+  --shadow-lg: 0 10px 20px rgba(13, 27, 42, 0.15), 0 6px 6px rgba(13, 27, 42, 0.18);
 }

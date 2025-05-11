@@ -1,0 +1,148 @@
+/* 
+ * NotiQ - Estilos Globales
+ * Este archivo centraliza los estilos más importantes de la aplicación
+ * para facilitar cambios y mantener consistencia visual
+ */
+
+/* Importación de fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
+
+/* Variables globales de la aplicación */
+:root {
+  /* Estilos de fuentes */
+  --app-font-primary: 'Roboto', sans-serif;
+  --app-font-secondary: 'Montserrat', sans-serif;
+  --app-font-accent: 'Poppins', sans-serif;
+  
+  /* Tamaños de fuente */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 28px;
+  
+  /* Espaciado */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Bordes y radios */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  
+  /* Transiciones */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* Clases de utilidad - no afectan a los componentes existentes */
+
+/* Botones de utilidad - solo se aplican cuando se usan estas clases */
+.global-btn {
+  display: inline-block;
+  font-family: var(--app-font-primary);
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.global-btn-primary {
+  background-color: var(--primary-color);
+  color: var(--neutral-100);
+  border: none;
+}
+
+.global-btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.global-btn-accent {
+  background-color: var(--accent-color);
+  color: var(--neutral-100);
+  border: none;
+}
+
+.global-btn-accent:hover {
+  background-color: var(--accent-dark);
+}
+
+/* Contenedores de utilidad */
+.global-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Utilidades de texto */
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-secondary {
+  color: var(--secondary-color);
+}
+
+.text-accent {
+  color: var(--accent-color);
+}
+
+.text-light {
+  color: var(--neutral-100);
+}
+
+.text-dark {
+  color: var(--text-primary);
+}
+
+/* Utilidades de espaciado */
+.m-0 { margin: 0; }
+.m-1 { margin: var(--spacing-xs); }
+.m-2 { margin: var(--spacing-sm); }
+.m-3 { margin: var(--spacing-md); }
+.m-4 { margin: var(--spacing-lg); }
+.m-5 { margin: var(--spacing-xl); }
+
+.p-0 { padding: 0; }
+.p-1 { padding: var(--spacing-xs); }
+.p-2 { padding: var(--spacing-sm); }
+.p-3 { padding: var(--spacing-md); }
+.p-4 { padding: var(--spacing-lg); }
+.p-5 { padding: var(--spacing-xl); }
+
+/* Utilidades para fondos */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); }
+.bg-accent { background-color: var(--accent-color); }
+.bg-light { background-color: var(--neutral-100); }
+.bg-dark { background-color: var(--neutral-900); }
+
+/* Utilidades de flexbox */
+.d-flex { display: flex; }
+.flex-column { flex-direction: column; }
+.justify-content-center { justify-content: center; }
+.align-items-center { align-items: center; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* Utilidades para el texto */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.fw-bold { font-weight: bold; }
+.fw-normal { font-weight: normal; }
+.fs-small { font-size: var(--font-size-sm); }
+.fs-medium { font-size: var(--font-size-md); }
+.fs-large { font-size: var(--font-size-lg); }
+

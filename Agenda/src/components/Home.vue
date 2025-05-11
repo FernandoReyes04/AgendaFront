@@ -407,26 +407,33 @@ export default {
 }
 
 .sidebar-btn.accent-btn {
-  background-color: var(--accent-color);
-  color: var(--neutral-100);
+  background-color: var(--accent-color); /* Silver Lake Blue #778da9 */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .sidebar-btn.accent-btn:hover {
-  background-color: #2ea841;
+  background-color: var(--accent-dark); /* Yinmn Blue #415a77 */
+  color: var(--text-light); /* Platinum #e0e1dd */
+}
+
+.sidebar-btn:focus, .sidebar-btn:active {
+  outline: 2px solid var(--accent-light) !important; /* Platinum #e0e1dd */
+  background-color: var(--accent-dark) !important; /* Yinmn Blue #415a77 */
+  color: var(--text-light) !important; /* Platinum #e0e1dd */
 }
 
 .sidebar-btn.profile-btn {
-  background-color: #4a6baf;
-  border: 2px solid #4a6baf;
-  color: white;
+  background-color: var(--primary-color); /* Oxford Blue #1b263b */
+  border: 2px solid var(--accent-color); /* Silver Lake Blue #778da9 */
+  color: var(--text-light); /* Platinum #e0e1dd */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .sidebar-btn.profile-btn:hover {
-  background-color: white;
-  color: #4a6baf;
+  background-color: var(--accent-color); /* Silver Lake Blue #778da9 */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 /* Área principal con el calendario */
@@ -479,26 +486,28 @@ export default {
 
 /* Botones con fondo de color */
 .primary-btn {
-  background-color: var(--primary-color);
-  color: var(--neutral-100);
+  background-color: var(--primary-color); /* Oxford Blue #1b263b */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .primary-btn:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-dark); /* Rich Black #0d1b2a */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .secondary-btn {
-  background-color: var(--secondary-color);
-  color: var(--neutral-100);
+  background-color: var(--secondary-color); /* Yinmn Blue #415a77 */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .secondary-btn:hover {
-  background-color: var(--secondary-dark);
+  background-color: var(--secondary-dark); /* Oxford Blue #1b263b */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .accent-btn {
-  background-color: var(--accent-color);
-  color: var(--neutral-100);
+  background-color: var(--accent-color); /* Silver Lake Blue #778da9 */
+  color: var(--text-light); /* Platinum #e0e1dd */
 }
 
 .accent-btn:hover {

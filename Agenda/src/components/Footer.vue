@@ -3,13 +3,13 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-section">
-          <h3 class="footer-title">Agenda Personal</h3>
-          <p class="footer-text">Organiza tus contactos, eventos y recordatorios en un solo lugar.</p>
+          <h3 class="footer-title">NotiQ</h3>
+          <p class="footer-text">Organiza tus contactos, eventos y recordatorios en un sistema moderno y eficiente.</p>
         </div>
         <div class="footer-section">
           <h3 class="footer-title">Contacto</h3>
           <p class="footer-text">¿Preguntas o sugerencias? Contáctanos</p>
-          <p class="footer-text">Email: raul@agendapersonal.com</p>
+          <p class="footer-text">Email: contacto@notiq.com</p>
         </div>
         <div class="footer-section">
           <h3 class="footer-title">Enlaces Rápidos</h3>
@@ -21,7 +21,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p class="copyright">© {{ new Date().getFullYear() }} Agenda Personal. Todos los derechos reservados.</p>
+        <p class="copyright">© {{ new Date().getFullYear() }} NotiQ. Todos los derechos reservados.</p>
       </div>
     </div>
   </footer>
@@ -42,6 +42,9 @@ export default {
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 100;
+  width: 100%;
+  left: 0;
+  right: 0;
 }
 
 .container {

@@ -1,13 +1,13 @@
 <template>
-  <header class="header">
+  <header class="header custom-header">
     <div class="container">
       <div class="header-left">
-        <button v-if="enPerfil" class="btn-volver" @click="volverAAgenda">
+        <button v-if="enPerfil" class="btn-volver custom-btn-volver" @click="volverAAgenda">
           <i class="fas fa-arrow-left"></i> Volver a Agenda
         </button>
-        <h1 class="title">Agenda Personal</h1>
+        <h1 class="title custom-title">NotiQ</h1>
       </div>
-      <button class="login-btn" @click="goToLogin">Iniciar Sesión</button>
+      <button class="login-btn custom-login-btn" @click="goToLogin">Iniciar Sesión</button>
     </div>
   </header>
 </template>
@@ -35,18 +35,23 @@ export default {
 
 <style scoped>
 /* Importar fuentes de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
 
 .header {
   width: 100%;
   padding: 15px 0;
-  background-color: var(--primary-color);
-  color: var(--neutral-100);
-  box-shadow: var(--shadow-md);
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
+}
+
+.custom-header {
+  background-color: #0d1b2a !important; /* Rich Black hardcoded */
+  background-image: none !important;
+  color: #e0e1dd !important; /* Platinum hardcoded */
+  box-shadow: 0 3px 6px rgba(13, 27, 42, 0.15), 0 2px 4px rgba(13, 27, 42, 0.12) !important;
+  border-bottom: 1px solid #415a77 !important; /* Yinmn Blue hardcoded */
 }
 
 .container {
@@ -59,15 +64,18 @@ export default {
 }
 
 .title {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 400;
   margin: 0;
   text-align: left;
-  letter-spacing: 0.5px;
+  letter-spacing: 2px;
   text-transform: none;
-  /* Efecto de sombra suave para dar profundidad */
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.custom-title {
+  color: #e0e1dd !important; /* Platinum hardcoded */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Responsivo */
@@ -92,22 +100,25 @@ export default {
 
 /* Estilos para el botón de volver */
 .btn-volver {
-  background-color: var(--accent-color);
   border: none;
-  color: var(--neutral-100);
-  padding: 8px 16px;
+  padding: 8px 15px;
   border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.custom-btn-volver {
+  background-color: #778da9 !important; /* Silver Lake Blue hardcoded */
+  color: #e0e1dd !important; /* Platinum hardcoded */
+  box-shadow: 0 1px 3px rgba(13, 27, 42, 0.12), 0 1px 2px rgba(13, 27, 42, 0.14) !important;
+}
+
 .btn-volver:hover {
-  background-color: #0056b3;
+  background-color: var(--secondary-color); /* Yinmn Blue */
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -115,8 +126,6 @@ export default {
 /* Estilos para el botón de iniciar sesión */
 .login-btn {
   background-color: transparent;
-  border: 2px solid var(--neutral-100);
-  color: var(--neutral-100);
   padding: 8px 16px;
   border-radius: 4px;
   font-size: 14px;
@@ -125,8 +134,18 @@ export default {
   transition: all 0.3s ease;
 }
 
+.custom-login-btn {
+  border: 2px solid #e0e1dd !important; /* Platinum hardcoded */
+  color: #e0e1dd !important; /* Platinum hardcoded */
+}
+
 .login-btn:hover {
-  background-color: var(--neutral-100);
-  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.custom-login-btn:hover {
+  background-color: #e0e1dd !important; /* Platinum hardcoded */
+  color: #0d1b2a !important; /* Rich Black hardcoded */
+  box-shadow: 0 1px 3px rgba(13, 27, 42, 0.12), 0 1px 2px rgba(13, 27, 42, 0.14) !important;
 }
 </style>

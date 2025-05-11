@@ -44,11 +44,41 @@
           eventColor: 'var(--primary-color)',
           eventBorderColor: 'var(--primary-light)',
           eventTextColor: 'var(--neutral-100)',
+          // Asegurarnos de que se muestre el título del evento en todas las vistas
+          displayEventTime: true,
+          displayEventEnd: true,
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false
+          },
           headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay',
           },
+          // Personalización de eventos
+          eventContent: function(arg) {
+            let titleEl = document.createElement('div');
+            titleEl.innerHTML = '<strong>' + arg.event.title + '</strong>';
+            titleEl.className = 'fc-event-title-custom';
+            
+            let timeEl = null;
+            if (arg.event.start) {
+              timeEl = document.createElement('div');
+              let time = arg.event.start.getHours() + ':' + 
+                (arg.event.start.getMinutes() < 10 ? '0' : '') + 
+                arg.event.start.getMinutes();
+              timeEl.innerHTML = time;
+              timeEl.className = 'fc-event-time-custom';
+            }
+            
+            let arrayOfDomNodes = [ titleEl ];
+            if (timeEl) arrayOfDomNodes.push(timeEl);
+            
+            return { domNodes: arrayOfDomNodes };
+          },
+          
         },
       };
     },
@@ -66,11 +96,11 @@
   <style scoped>
   .calendar-interactive-container {
     margin-top: 20px;
-    margin-bottom: 150px; /* Mayor espacio para evitar superposición con el footer */
+    margin-bottom: 50px; /* Menor espacio para evitar superposición con el footer */
     width: 100%;
     max-width: 1050px; /* Ligeramente más ancho */
     height: auto; /* Altura automática */
-    min-height: 520px; /* Un poco más alto */
+    min-height: 650px; /* Más alto para mejor visualización */
     padding: 20px; /* Padding alrededor del calendario */
     position: relative;
     z-index: 1; /* Asegura que el calendario esté por debajo del footer */
@@ -201,13 +231,48 @@
   }
   
   :deep(.fc-scrollgrid-section-header th) {
-    color: var(--neutral-100) !important;
+    color: white !important;
     padding: 10px 0 !important;
     font-weight: 600 !important;
   }
   
+  :deep(.fc-col-header-cell-cushion) {
+    color: white !important;
+  }
+  
   :deep(.fc-toolbar-title) {
-    color: var(--text-primary) !important;
+    color: white !important;
     font-weight: 700 !important;
+    text-transform: capitalize !important;
+  }
+
+  /* Estilos para asegurar que los títulos de eventos se muestren correctamente */
+  :deep(.fc-event-title) {
+    font-weight: bold !important;
+    font-size: 0.95em !important;
+    padding: 2px 0 !important;
+    display: block !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Mejorar visibilidad en vista mensual */
+  :deep(.fc-daygrid-event .fc-event-title) {
+    font-weight: bold !important;
+    padding: 2px 4px !important;
+    color: var(--neutral-100) !important;
+  }
+
+  /* Mejorar visibilidad en vista semanal y diaria */
+  :deep(.fc-timegrid-event .fc-event-title) {
+    font-size: 0.9em !important;
+    font-weight: bold !important;
+    color: var(--neutral-100) !important;
+  }
+
+  /* Contenedor del título */
+  :deep(.fc-event-title-container) {
+    padding: 1px 2px !important;
   }
   </style>

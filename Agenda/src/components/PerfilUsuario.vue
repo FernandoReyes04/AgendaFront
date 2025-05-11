@@ -153,24 +153,35 @@
               </div>
             </div>
 
-            <!-- Los datos dinámicos-->
-            <div class="elemento-tarjeta contacto-tarjeta" v-for="(contacto, index) in contactosFiltrados" :key="'contacto-'+index">
+            <!-- Los contactos reales de la app -->
+            <div v-for="(contacto, index) in contactos" :key="'contacto-'+index" class="elemento-tarjeta contacto-tarjeta">
               <div class="contacto-info">
                 <div class="contacto-avatar">{{ obtenerIniciales(contacto.first_name, contacto.last_name) }}</div>
                 <div class="contacto-detalles">
                   <h4>{{ contacto.first_name }} {{ contacto.last_name }}</h4>
                   <p><i class="fas fa-phone"></i> {{ contacto.phone_number }}</p>
                   <p><i class="fas fa-envelope"></i> {{ contacto.email }}</p>
-                  <p class="contacto-notas" v-if="contacto.notes"><i class="fas fa-sticky-note"></i> {{ contacto.notes }}</p>
                 </div>
               </div>
-              <div class="contacto-acciones">
-                <button class="btn-accion editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-accion eliminar">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
+              <div class="contacto-actions-container">
+                <div class="contacto-actions">
+                  <button class="btn-accion editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-accion eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                <div class="contacto-notes-section">
+                  <button @click="toggleContactoNotes(index)" class="notes-toggle" :class="{'expanded': isContactoExpanded(index)}">
+                    <span v-if="!isContactoExpanded(index)">Ver notas</span>
+                    <span v-else>Ocultar</span>
+                  </button>
+                  <div v-if="isContactoExpanded(index)" class="contacto-notes-content">
+                    <p v-if="contacto.notes">{{ contacto.notes }}</p>
+                    <p v-else class="empty-notes">No hay notas para este contacto</p>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -294,17 +305,28 @@
                 <div class="evento-detalles">
                   <h4>{{ evento.name }}</h4>
                   <p><i class="fas fa-clock"></i> {{ evento.hour }}</p>
-                  <p><i class="fas fa-map-marker-alt"></i> {{ evento.location || 'Sin ubicación' }}</p>
-                  <p class="evento-descripcion"><i class="fas fa-info-circle"></i> {{ evento.description || 'Sin descripción' }}</p>
+                  <p><i class="fas fa-map-marker-alt"></i> {{ evento.location }}</p>
                 </div>
               </div>
-              <div class="evento-acciones">
-                <button class="btn-accion editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-accion eliminar">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
+              <div class="evento-actions-container">
+                <div class="evento-actions">
+                  <button class="btn-accion editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-accion eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                <div class="evento-desc-section">
+                  <button @click="toggleEventoDetails(index)" class="desc-toggle" :class="{'expanded': isEventoExpanded(index)}">
+                    <span v-if="!isEventoExpanded(index)">Ver descripción</span>
+                    <span v-else>Ocultar</span>
+                  </button>
+                  <div v-if="isEventoExpanded(index)" class="evento-desc-content">
+                    <p v-if="evento.description">{{ evento.description }}</p>
+                    <p v-else class="empty-desc">No hay descripción para este evento</p>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -445,7 +467,6 @@
                   <h4>{{ recordatorio.name }}</h4>
                   <p><i class="fas fa-clock"></i> {{ recordatorio.hour }}</p>
                   <p><i class="fas fa-envelope"></i> {{ recordatorio.email }}</p>
-                  <p class="recordatorio-descripcion"><i class="fas fa-info-circle"></i> {{ recordatorio.description || 'Sin descripción' }}</p>
                 </div>
               </div>
               <div class="recordatorio-estado">
@@ -456,13 +477,25 @@
                   {{ recordatorio.priority }}
                 </span>
               </div>
-              <div class="recordatorio-acciones">
-                <button class="btn-accion editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-accion eliminar">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
+              <div class="recordatorio-actions-container">
+                <div class="recordatorio-actions">
+                  <button class="btn-accion editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-accion eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                <div class="recordatorio-desc-section">
+                  <button @click="toggleRecordatorioDetails(index)" class="desc-toggle" :class="{'expanded': isRecordatorioExpanded(index)}">
+                    <span v-if="!isRecordatorioExpanded(index)">Ver descripción</span>
+                    <span v-else>Ocultar</span>
+                  </button>
+                  <div v-if="isRecordatorioExpanded(index)" class="recordatorio-desc-content">
+                    <p v-if="recordatorio.description">{{ recordatorio.description }}</p>
+                    <p v-else class="empty-desc">No hay descripción para este recordatorio</p>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -510,7 +543,9 @@ export default {
       busquedaContactos: '',
       busquedaEventos: '',
       busquedaRecordatorios: '',
-      // Datos de prueba
+      expandedContactoNotes: {},
+      expandedEventoDetails: {},
+      expandedRecordatorioDetails: {},
       contactos: [
         { first_name: 'Juan', last_name: 'Pérez', phone_number: '555-123-4567', email: 'juan.perez@ejemplo.com', notes: 'Amigo del trabajo' },
         { first_name: 'María', last_name: 'González', phone_number: '555-987-6543', email: 'maria.gonzalez@ejemplo.com', notes: 'Cliente importante' },
@@ -582,14 +617,32 @@ export default {
       this.pestanaActiva = pestana;
     },
     obtenerIniciales(nombre, apellido) {
-      return (nombre.charAt(0) + apellido.charAt(0)).toUpperCase();
+      return (nombre ? nombre.charAt(0) : '') + (apellido ? apellido.charAt(0) : '');
     },
     obtenerDia(fecha) {
-      return new Date(fecha).getDate();
+      return fecha ? fecha.split('-')[2] : '';
     },
     obtenerMes(fecha) {
       const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-      return meses[new Date(fecha).getMonth()];
+      return fecha ? meses[parseInt(fecha.split('-')[1]) - 1] : '';
+    },
+    toggleContactoNotes(index) {
+      this.$set(this.expandedContactoNotes, index, !this.expandedContactoNotes[index]);
+    },
+    isContactoExpanded(index) {
+      return !!this.expandedContactoNotes[index];
+    },
+    toggleEventoDetails(index) {
+      this.$set(this.expandedEventoDetails, index, !this.expandedEventoDetails[index]);
+    },
+    isEventoExpanded(index) {
+      return !!this.expandedEventoDetails[index];
+    },
+    toggleRecordatorioDetails(index) {
+      this.$set(this.expandedRecordatorioDetails, index, !this.expandedRecordatorioDetails[index]);
+    },
+    isRecordatorioExpanded(index) {
+      return !!this.expandedRecordatorioDetails[index];
     }
   }
 };
@@ -838,20 +891,20 @@ export default {
 }
 
 .elemento-tarjeta {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  transition: transform 0.2s, box-shadow 0.3s;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .elemento-tarjeta:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Estilos específicos para tarjetas de contacto */
@@ -1016,14 +1069,98 @@ export default {
   font-size: 0.85rem;
 }
 
+/* Estilos para secciones desplegables */
+.contacto-actions-container,
+.evento-actions-container,
+.recordatorio-actions-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.contacto-actions,
+.evento-actions,
+.recordatorio-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.contacto-notes-section,
+.evento-desc-section,
+.recordatorio-desc-section {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.contacto-notes-content,
+.evento-desc-content,
+.recordatorio-desc-content {
+  padding: 12px;
+  background-color: #e0e1dd; /* Platinum */
+  border-radius: 6px;
+  margin-top: 6px;
+  color: #0d1b2a; /* Rich Black */
+  font-size: 0.92rem;
+  line-height: 1.5;
+  border-left: 3px solid #415a77; /* Yinmn Blue */
+  transition: all 0.3s ease;
+}
+
+.notes-toggle,
+.desc-toggle {
+  background-color: transparent;
+  border: none;
+  color: #415a77; /* Yinmn Blue */
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.notes-toggle:hover,
+.desc-toggle:hover {
+  color: #1b263b; /* Oxford Blue */
+  text-decoration: underline;
+}
+
+.notes-toggle::before,
+.desc-toggle::before {
+  content: '\25B6';
+  font-size: 0.7rem;
+  margin-right: 5px;
+  transition: transform 0.3s ease;
+}
+
+.notes-toggle.expanded::before,
+.desc-toggle.expanded::before {
+  transform: rotate(90deg);
+}
+
+.notes-toggle.expanded,
+.desc-toggle.expanded {
+  font-weight: 600;
+  color: #1b263b; /* Oxford Blue */
+}
+
+.empty-notes,
+.empty-desc {
+  font-style: italic;
+  color: #778da9; /* Silver Lake Blue */
+}
+
 .recordatorio-descripcion, .evento-descripcion, .contacto-notas {
   margin-top: 5px !important;
   font-style: italic;
-  color: var(--neutral-700);
-  background-color: var(--neutral-100);
+  color: #1b263b; /* Oxford Blue */
+  background-color: #e0e1dd; /* Platinum */
   border-radius: 4px;
   padding: 5px 8px;
-  border-left: 3px solid var(--neutral-300);
+  border-left: 3px solid #415a77; /* Yinmn Blue */
   font-size: 0.82rem !important;
   line-height: 1.3;
   max-width: 350px;

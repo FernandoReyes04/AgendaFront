@@ -10,7 +10,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda</title>
     <link rel="stylesheet" href="/styles.css"> 
-  </head>
+    <style>
+    /* Estilos de encabezado forzados para la nueva paleta */
+    header.header {
+      background: #0d1b2a !important; /* Rich Black */
+      background-image: none !important;
+      border-bottom: 1px solid #415a77 !important; /* Yinmn Blue */
+    }
+    .title {
+      color: #e0e1dd !important; /* Platinum */
+    }
+    .login-btn {
+      border: 2px solid #e0e1dd !important;
+      color: #e0e1dd !important;
+    }
+    .login-btn:hover {
+      background-color: #e0e1dd !important;
+      color: #0d1b2a !important;
+    }
+  </style>
+</head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
