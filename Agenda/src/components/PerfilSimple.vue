@@ -2,36 +2,36 @@
   <div class="perfil-page">
     <Header :enPerfil="true" @volver-agenda="$emit('volver')" />
     <div class="perfil-contenedor">
-    
-    <!-- Encabezado del perfil -->
-    <div class="perfil-header">
-      <div class="avatar-container">
-        <div class="avatar">
-          <span>RS</span>
-        </div>
-      </div>
-      <div class="info-usuario">
-        <h2 class="nombre-usuario">Raul Sosa</h2>
-        <p class="correo-usuario">raul@ejemplo.com</p>
-        <div class="estadisticas">
-          <div class="stat-item">
-            <span class="stat-numero">{{ contactos.length }}</span>
-            <span class="stat-label">Contactos</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-numero">{{ eventos.length }}</span>
-            <span class="stat-label">Eventos</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-numero">{{ recordatorios.length }}</span>
-            <span class="stat-label">Recordatorios</span>
+      <!-- Encabezado del perfil -->
+      <div class="perfil-header">
+        <div class="avatar-container">
+          <div class="avatar">
+            <span>RS</span>
           </div>
         </div>
-      </div>
-      <div class="acciones">
-        <button class="btn-editar">
-          <i class="fas fa-pencil-alt"></i> Editar Perfil
-        </button>
+        <div class="info-usuario">
+          <h2 class="nombre-usuario">Raul Sosa</h2>
+          <p class="correo-usuario">raul@ejemplo.com</p>
+          <div class="estadisticas">
+            <div class="stat-item">
+              <span class="stat-numero">{{ contactos.length }}</span>
+              <span class="stat-label">Contactos</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-numero">{{ eventos.length }}</span>
+              <span class="stat-label">Eventos</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-numero">{{ recordatorios.length }}</span>
+              <span class="stat-label">Recordatorios</span>
+            </div>
+          </div>
+        </div>
+        <div class="acciones">
+          <button class="btn-editar">
+            <i class="fas fa-pencil-alt"></i> Editar Perfil
+          </button>
+        </div>
       </div>
     </div>
 
