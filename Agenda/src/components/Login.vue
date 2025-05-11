@@ -8,6 +8,10 @@
           <input type="text" id="username" v-model="username" placeholder="Nombre de usuario">
         </div>
         <div class="input-group">
+          <label for="loginEmail">Correo electrónico</label>
+          <input type="email" id="loginEmail" v-model="email" placeholder="ejemplo@correo.com">
+        </div>
+        <div class="input-group">
           <label for="password">Contraseña</label>
           <input type="password" id="password" v-model="password" placeholder="Contraseña">
         </div>
@@ -26,6 +30,10 @@
           <div class="input-group">
             <label for="nuevoUsername">Nombre de usuario</label>
             <input type="text" id="nuevoUsername" v-model="nuevoUsername" placeholder="Nombre de usuario">
+          </div>
+          <div class="input-group">
+            <label for="nuevoEmail">Correo electrónico</label>
+            <input type="email" id="nuevoEmail" v-model="nuevoEmail" placeholder="ejemplo@correo.com">
           </div>
           <div class="input-group">
             <label for="nuevaPassword">Contraseña</label>
@@ -50,9 +58,11 @@
     data() {
       return {
         username: '',
+        email: '',
         password: '',
         mostrarCrearUsuario: false,
         nuevoUsername: '',
+        nuevoEmail: '',
         nuevaPassword: '',
         confirmarPassword: '',
         usuarios: [] // almacenamiento temporal de usuarios en lo que se conecta al back    ---->PD: cuando se integre se tendra que hacer una confirmacion de estado 
