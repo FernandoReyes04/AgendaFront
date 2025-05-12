@@ -54,6 +54,7 @@
   import interactionPlugin from '@fullcalendar/interaction';
   
   export default {
+    
     components: {
       FullCalendar,
     },
@@ -217,6 +218,7 @@
         deep: true,
       },
     },
+    emits: ['crearEvento', 'crearRecordatorio'] // ✅ Agrega esto
   };
   </script>
   

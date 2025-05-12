@@ -206,36 +206,50 @@ export default {
     },
     
     async guardarRecordatorio() {
-      // Validar el formulario antes de guardar
-      if (!this.validarFormulario()) {
-        return; // No continuar si hay errores de validación
-      }
-      
-      try {
-        // Crear objeto para guardar
-        const recordatorioParaGuardar = {
-          name: this.recordatorio.name,
-          description: this.recordatorio.description,
-          date: this.recordatorio.date,
-          hour: this.recordatorio.hour,
-          email: this.recordatorio.email
-        };
-        
-        // Si estamos editando, incluir el ID
-        if (this.editando && this.recordatorio.id) {
-          recordatorioParaGuardar.id = this.recordatorio.id;
-        }
-        
-        this.$emit('guardar', recordatorioParaGuardar);
-        
-        // Resetear el modo edición
-        this.editando = false;
-        
-        this.$emit('cerrar');
-      } catch (error) {
-        console.error('Error al guardar recordatorio:', error);
-      }
-    },
+            if (!this.validarFormulario()) return;
+
+            try {
+                // ✅ Obtén el usuario desde localStorage
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.id) {
+                  alert('Usuario no autenticado');
+                  return;
+                }
+
+                // ✅ Crea el objeto recordatorio con userId
+                const recordatorioParaGuardar = {
+                    name: this.recordatorio.name,
+                    description: this.recordatorio.description,
+                    date: this.recordatorio.date,
+                    hour: this.recordatorio.hour,
+                    email: this.recordatorio.email,
+                    userId: user.id // ✅ Enviando el ID del usuario logueado
+                };
+
+                await createRecordatorio(recordatorioParaGuardar); // Llamada al backend
+
+                // Si es edición, también incluimos el ID del recordatorio
+                if (this.editando && this.recordatorio.id) {
+                    recordatorioParaGuardar.id = this.recordatorio.id;
+                }
+
+                // Llamada al servicio
+                const recordatorioGuardado = await createRecordatorio(recordatorioParaGuardar);
+                this.$emit('guardar', recordatorioGuardado);
+
+                // Resetear modo edición
+                this.editando = false;
+
+                // Cerrar modal
+                const modal = Modal.getInstance(document.getElementById('recordatorioModal'));
+                modal.hide();
+                this.$emit('cerrar');
+
+            } catch (error) {
+                console.error('Error al guardar recordatorio:', error);
+                alert('No se pudo guardar el recordatorio. Asegúrate de estar autenticado.');
+            }
+        },
     
     // Método para inicializar y mostrar el modal
     showModal() {

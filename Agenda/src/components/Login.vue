@@ -33,6 +33,7 @@
           </div>
           <div class="input-group">
             <label for="nuevoEmail">Correo electrónico</label>
+            <div v-if="emailError" class="invalid-feedback">{{ emailError }}</div>
             <input type="email" id="nuevoEmail" v-model="nuevoEmail" placeholder="ejemplo@correo.com">
           </div>
           <div class="input-group">
@@ -54,18 +55,20 @@
   </template>
   
   <script>
+  import { login as loginService, register as registerService } from '@/services/authServices';
   export default {
     data() {
       return {
         username: '',
-        email: '',
-        password: '',
-        mostrarCrearUsuario: false,
-        nuevoUsername: '',
-        nuevoEmail: '',
-        nuevaPassword: '',
-        confirmarPassword: '',
-        usuarios: [] // almacenamiento temporal de usuarios en lo que se conecta al back    ---->PD: cuando se integre se tendra que hacer una confirmacion de estado 
+      password: '',
+      email: '', // ✅ Añadimos aquí
+      mostrarCrearUsuario: false,
+      nuevoUsername: '',
+      nuevoEmail: '',
+      nuevaPassword: '',
+      confirmarPassword: '',
+      usuarios: [],
+      emailError: '' // ✅ Nuevo campo para errores
       };
     },
     computed: {
@@ -81,13 +84,47 @@
       }
     },
     methods: {
+      validarEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+          this.emailError = 'Ingrese un correo electrónico válido';
+          return false;
+      }
+        this.emailError = '';
+        return true;
+      },
       skipLogin() {
         console.log('Saltando inicio de sesión');
         this.$emit('login-success');
       },
-      login() {
-        // metodo para autenticación estándar con usuario y contraseña
-        this.$emit('login-success');
+      async login() {
+    const credentials = {
+        email: this.email,
+        password: this.password
+    };
+
+    try {
+        const response = await fetch('http://localhost:8080/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(credentials)
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            localStorage.setItem('user', JSON.stringify(user));
+            this.$emit('login-success');
+        } else {
+            alert('Credenciales inválidas');
+        }
+
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        alert('No se pudo conectar con el servidor');
+    }
+
       },
       loginWithGoogle() {
         // este método iniciaría el flujo de autenticación con Google OAuth 2.0
@@ -103,21 +140,43 @@
         this.nuevaPassword = '';
         this.confirmarPassword = '';
       },
-      crearUsuario() {
-        if (this.nuevaPassword !== this.confirmarPassword) {
-          alert('Las contraseñas no coinciden');
-          return;
-        }
-        const nuevoUsuario = {
-          username: this.nuevoUsername,
-          password: this.nuevaPassword
-        };
-        // aquí se deberia agregar la lógica para enviar el nuevo usuario al back
-        this.usuarios.push(nuevoUsuario);
-        console.log('Usuario creado:', nuevoUsuario);
+      async crearUsuario() {
+    if (this.nuevaPassword !== this.confirmarPassword) {
+        alert('Las contraseñas no coinciden');
+        return;
+    }
+
+    const isValidEmail = this.validarEmail(this.nuevoEmail);
+    if (!this.nuevoUsername.trim()) {
+        alert('El nombre de usuario es obligatorio');
+        return;
+    }
+
+    if (!isValidEmail) {
+        alert('Correo electrónico inválido');
+        return;
+    }
+
+    // ✅ Datos bien formateados para registrar
+    const nuevoUsuario = {
+        username: this.nuevoUsername,
+        email: this.nuevoEmail,
+        password: this.nuevaPassword // ✅ Campo clave – debe estar presente
+    };
+
+    try {
+        // ✅ Llamada única al servicio
+        const usuarioGuardado = await registerService(nuevoUsuario);
+
+        console.log('Usuario creado:', usuarioGuardado);
         this.cerrarModalCrearUsuario();
-      },
-      calcularSeguridadContraseña(password) {
+        alert('Usuario creado exitosamente');
+
+    } catch (error) {
+        console.error('Error registrando usuario:', error.response?.data || error.message);
+        alert('No se pudo crear el usuario. Inténtalo de nuevo.');
+    }
+},      calcularSeguridadContraseña(password) {
         let strength = 0;
         if (password.length >= 8) strength += 20;
         if (password.match(/[a-z]/)) strength += 20;
@@ -127,7 +186,8 @@
         return strength;
       }
     }
-  };
+  };  
+
   </script>
   
   <style scoped>

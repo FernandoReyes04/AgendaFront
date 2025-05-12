@@ -13,6 +13,7 @@
     />
     <div v-else class="main-content">
       <Header @show-login="showLogin" />
+      <Header :enPerfil="mostrarPerfil" @logout="handleLogout" />
       
       <div class="app-container">
         <!-- Barra lateral con botones -->
@@ -185,11 +186,13 @@ export default {
       isLoggedIn: localStorage.getItem('userLoggedIn') === 'true' || false,
       eventos: [],
       contactos: [],
+      isLoggedIn: false,
       mostrarContactos: false,
       mostrarEventos: false,
       mostrarModalContacto: false,
       mostrarModalEvento: false,
       mostrarModalRecordatorio: false,
+      user: null,
       // Variables para la edición
       contactoEnEdicion: null,
       eventoEnEdicion: null,
@@ -236,9 +239,18 @@ export default {
   },
   methods: {
     handleLoginSuccess() {
-      this.isLoggedIn = true;
-      localStorage.setItem('userLoggedIn', 'true');
-      this.cargarComponentes();
+        this.isLoggedIn = true;
+        localStorage.setItem('userLoggedIn', 'true');
+        this.cargarComponentes(); // ✅ Ahora sí existe
+    },
+    async cargarComponentes() {
+        try {
+            this.contactos = await getContactos(); // ✅ Servicios deben estar importados
+            this.eventos = await getEventos();
+            this.recordatorios = await getRecordatorios();
+        } catch (error) {
+            console.error('Error cargando componentes:', error);
+        }
     },
     showLogin() {
       this.isLoggedIn = false;
@@ -353,6 +365,27 @@ export default {
     cerrarEventosModal() {
       this.mostrarEventos = false;
       this.limpiarResidualModal();
+    },
+    mostrarNotificacion({ tipo, titulo, mensaje }) {
+        this.notificacion = {
+            mostrar: true,
+            tipo,
+            titulo,
+            mensaje
+        };
+
+        setTimeout(() => {
+            this.notificacion.mostrar = false;
+        }, 5000);
+    },
+    async cargarComponentes() {
+        try {
+            this.contactos = await getContactos();
+            this.eventos = await getEventos();
+            this.recordatorios = await getRecordatorios();
+        } catch (error) {
+            console.error('Error cargando componentes:', error);
+        }
     },
     // Guardar nuevo evento o actualizar existente
     async guardarEvento(evento) {

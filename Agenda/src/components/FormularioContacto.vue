@@ -169,39 +169,34 @@ export default {
     },
     
     async guardarContacto() {
-      // Validar el formulario antes de guardar
-      if (!this.validarFormulario()) {
-        return; // No continuar si hay errores de validación
-      }
-      
-      try {
+    if (!this.validarFormulario()) return;
+
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+
         const contactoData = {
-          first_name: this.contacto.first_name,
-          last_name: this.contacto.last_name,
-          phone_number: this.contacto.phone_number,
-          email: this.contacto.email,
-          notes: this.contacto.notes,
+            first_name: this.contacto.first_name,
+            last_name: this.contacto.last_name,
+            phone_number: this.contacto.phone_number,
+            email: this.contacto.email,
+            notes: this.contacto.notes,
+            userId: user.id
         };
-        
-        // Si estamos editando, incluimos el ID
-        if (this.editando && this.contacto.id) {
-          contactoData.id = this.contacto.id;
-        }
 
-        // Emitimos al componente padre para que él maneje la creación/actualización
-        this.$emit('guardar', contactoData);
+        const contactoGuardado = await createContacto(contactoData);
+        console.log('Contacto guardado:', contactoGuardado);
 
-        // Reseteamos el modo de edición
-        this.editando = false;
+        this.$emit('guardar', contactoGuardado);
 
-        // ✅ Cerrar el modal
         const modal = Modal.getInstance(document.getElementById('contactoModal'));
         modal.hide();
         this.$emit('cerrar');
-      } catch (error) {
-        console.error('Error al guardar contacto:', error);
-      }
-    },
+
+    } catch (error) {
+        console.error('Error al guardar contacto:', error.response?.data || error.message); // ✅ Muestra respuesta completa del error
+        alert('No se pudo guardar el contacto. Verifica los datos e inténtalo de nuevo.');
+    }
+},
     showModal() {
       const modalElement = document.getElementById('contactoModal');
       

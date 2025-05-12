@@ -16,6 +16,7 @@
           <i class="fas fa-arrow-left"></i>
         </button>
         <button class="login-btn custom-login-btn" @click="goToLogin">Iniciar Sesión</button>
+        <button @click="logout" class="btn btn-danger">Cerrar Sesión</button>
       </div>
     </div>
   </header>
@@ -31,15 +32,23 @@ export default {
   },
   methods: {
     goToLogin() {
-      // Emitir evento para mostrar la pantalla de login
       this.$emit('show-login');
     },
     volverAAgenda() {
-      // Emitir evento para volver a la agenda principal
       this.$emit('volver-agenda');
+    },
+    
+    // ✅ Método nuevo: logout()
+    logout() {
+      // Elimina los datos del usuario desde localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('userLoggedIn');
+
+      // Emite evento para redirigir al login
+      this.$emit('logout');
     }
   }
-}
+};
 </script>
 
 <style scoped>

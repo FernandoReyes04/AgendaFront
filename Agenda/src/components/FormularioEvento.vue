@@ -72,203 +72,186 @@
 
 <script>
 import { Modal } from 'bootstrap';
-import { createEvento } from '@/services/eventoServices'; // ✅ Importar servicio
+import { createEvento, updateEvento } from '@/services/eventoServices';
 
 export default {
-  data() {
-    return {
-      evento: {
-        name: '',
-        description: '',
-        date: '',
-        hour: '',
-        background_color: '#1b263b'
-      },
-      nombreError: '',
-      fechaError: '',
-      horaError: '',
-      editando: false,
-      modal: null
-    };
-  },
-  methods: {
-    validarNombre() {
-      if (!this.evento.name) {
-        this.nombreError = 'El nombre del evento es obligatorio';
-      } else if (this.evento.name.length < 3) {
-        this.nombreError = 'El nombre debe tener al menos 3 caracteres';
-      } else {
-        this.nombreError = '';
-      }
-    },
-    
-    validarFecha() {
-      if (!this.evento.date) {
-        this.fechaError = 'Debe seleccionar una fecha';
-      } else {
-        // Verificar que la fecha no sea anterior a hoy
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0); // Establecer a 00:00:00
-        
-        const fechaSeleccionada = new Date(this.evento.date);
-        fechaSeleccionada.setHours(0, 0, 0, 0);
-        
-        if (fechaSeleccionada < hoy) {
-          this.fechaError = 'La fecha no puede ser anterior a hoy';
-        } else {
-          this.fechaError = '';
-        }
-      }
-    },
-    
-    validarHora() {
-      if (!this.evento.hour) {
-        this.horaError = 'Debe seleccionar una hora';
-        return;
-      }
-      
-      // Verificar si la fecha seleccionada es hoy
-      const fechaActual = new Date();
-      const fechaSeleccionada = new Date(this.evento.date);
-      
-      // Verificar si las fechas son iguales (mismo día)
-      const sonMismoDia = (
-        fechaSeleccionada.getDate() === fechaActual.getDate() &&
-        fechaSeleccionada.getMonth() === fechaActual.getMonth() &&
-        fechaSeleccionada.getFullYear() === fechaActual.getFullYear()
-      );
-      
-      // Si es el mismo día, verificar que la hora no sea anterior a la actual
-      if (sonMismoDia) {
-        const horaActual = fechaActual.getHours();
-        const minutosActuales = fechaActual.getMinutes();
-        
-        // Obtener hora y minutos seleccionados
-        const [horaSeleccionada, minutosSeleccionados] = this.evento.hour.split(':').map(Number);
-        
-        // Convertir a minutos totales para comparación más fácil
-        const minutosActualesTotales = (horaActual * 60) + minutosActuales;
-        const minutosSeleccionadosTotales = (horaSeleccionada * 60) + minutosSeleccionados;
-        
-        if (minutosSeleccionadosTotales < minutosActualesTotales) {
-          this.horaError = 'No es posible programar eventos en horas pasadas';
-          return;
-        }
-      }
-      
-      this.horaError = '';
-    },
-    
-    validarFormulario() {
-      this.validarNombre();
-      this.validarFecha();
-      this.validarHora();
-      
-      return !this.nombreError && !this.fechaError && !this.horaError;
-    },
-    
-    async guardarEvento() {
-      // Validar formulario antes de enviar
-      if (!this.validarFormulario()) {
-        return;
-      }
-      
-      try {
-        const eventoParaGuardar = {
-          name: this.evento.name,
-          description: this.evento.description,
-          date: this.evento.date,
-          hour: this.evento.hour,
-          background_color: this.evento.background_color
+    data() {
+        return {
+            evento: {
+                name: '',
+                description: '',
+                date: '',
+                hour: '',
+                background_color: '#1b263b'
+            },
+            nombreError: '',
+            fechaError: '',
+            horaError: '',
+            editando: false,
+            modal: null,
+            notificacion: {
+                mostrar: false,
+                tipo: '',
+                titulo: '',
+                mensaje: ''
+            }
         };
-        
-        // Si estamos editando, incluir el ID
-        if (this.editando && this.evento.id) {
-          eventoParaGuardar.id = this.evento.id;
-        }
-        
-        this.$emit('guardar', eventoParaGuardar);
-        
-        // Resetear el modo edición
-        this.editando = false;
-        
-        this.$emit('cerrar');
-      } catch (error) {
-        console.error('Error al guardar evento:', error);
-      }
     },
-    showModal() {
-      // Asegurarse de que el elemento existe antes de inicializar el modal
-      const modalElement = document.getElementById('eventoModal');
-      if (modalElement) {
-        // Configuramos el modal para que se cierre al hacer clic fuera
-        this.modal = new Modal(modalElement, {
-          backdrop: true,    // true = cierra al hacer clic fuera
-          keyboard: true     // true = cierra al presionar ESC
-        });
-        this.modal.show();
+    methods: {
+        // Validaciones de formulario
+        validarNombre() {
+            if (!this.evento.name) {
+                this.nombreError = 'El nombre del evento es obligatorio';
+            } else if (this.evento.name.length < 3) {
+                this.nombreError = 'El nombre debe tener al menos 3 caracteres';
+            } else {
+                this.nombreError = '';
+            }
+        },
+        validarFecha() {
+            if (!this.evento.date) {
+                this.fechaError = 'Debe seleccionar una fecha';
+            } else {
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
 
-        // Agregar un listener para cerrar el modal al hacer clic fuera (adicional a backdrop)
-        modalElement.addEventListener('click', (event) => {
-          // Verificar si el clic fue en el fondo del modal y no en su contenido
-          if (event.target === modalElement) {
-            this.$emit('cerrar');
-          }
-        });
-      } else {
-        console.error('El elemento eventoModal no se encontró en el DOM');
-      }
-    },
-    
-    // Método para preseleccionar una fecha cuando se viene desde el calendario
-    preseleccionarFecha(fecha) {
-      if (fecha) {
-        // Establecer la fecha del evento
-        this.evento.date = fecha;
-        
-        // Ahora vamos a configurar la hora predeterminada
-        // Si la hora actual está entre 9 AM y 5 PM, usamos la hora actual
-        // Si no, establecemos las 12:00 PM como hora predeterminada
-        const ahora = new Date();
-        let hora = ahora.getHours();
-        let minutos = ahora.getMinutes();
-        
-        // Si estamos fuera del horario laboral, establecer a 12:00 PM
-        if (hora < 9 || hora > 17) {
-          hora = 12;
-          minutos = 0;
+                const fechaSeleccionada = new Date(this.evento.date);
+                fechaSeleccionada.setHours(0, 0, 0, 0);
+
+                if (fechaSeleccionada < hoy) {
+                    this.fechaError = 'La fecha no puede ser anterior a hoy';
+                } else {
+                    this.fechaError = '';
+                }
+            }
+        },
+        validarHora() {
+            if (!this.evento.hour) {
+                this.horaError = 'Debe seleccionar una hora';
+            } else {
+                this.horaError = '';
+            }
+        },
+        validarFormulario() {
+            this.validarNombre();
+            this.validarFecha();
+            this.validarHora();
+            return !this.nombreError && !this.fechaError && !this.horaError;
+        },
+
+        // ✅ Método principal para guardar o actualizar evento
+        async guardarEvento() {
+    if (!this.validarFormulario()) return;
+
+    try {
+        // ✅ Obtenemos el usuario desde localStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+console.log('Usuario logueado:', user); // Deberías ver { id: 3, username: "Fernando", ... }
+
+if (!user || !user.id) {
+    alert('Usuario no autenticado');
+    return;
+}
+
+const eventoParaGuardar = {
+    name: this.evento.name,
+    description: this.evento.description,
+    date: this.evento.date,
+    hour: this.evento.hour,
+    background_color: this.evento.background_color,
+    userId: user.id // ✅ Este es el campo clave
+};
+
+console.log('Enviando evento al backend:', eventoParaGuardar); // ❗ Revisa si aparece userId aquí
+
+        // Si es edición, también incluimos el id del evento
+        if (this.editando && this.evento.id) {
+            eventoParaGuardar.id = this.evento.id;
         }
-        
-        // Formatear la hora para el input time (HH:MM)
-        const horaFormateada = `${hora.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-        this.evento.hour = horaFormateada;
-      }
-    },
-    
-    // Método para establecer valores cuando editamos un evento existente
-    establecerValoresEdicion(evento) {
-      this.editando = true;
-      
-      // Cambiamos el título del modal
-      const modalLabel = document.getElementById('eventoModalLabel');
-      if (modalLabel) {
-        modalLabel.innerText = 'Editar Evento';
-      }
-      
-      // Asignamos los valores del evento a editar
-      this.evento = {
-        id: evento.id,
-        name: evento.name || '',
-        description: evento.description || '',
-        date: evento.date || '',
-        hour: evento.hour || '',
-        background_color: evento.background_color || '#1b263b'
-      };
+        await createEvento(eventoParaGuardar); // Llamada al backend Spring Boot
+
+        // Llamada al servicio
+        const eventoGuardado = await createEvento(eventoParaGuardar);
+        this.$emit('guardar', eventoGuardado);
+
+        // Cerrar modal
+        const modal = Modal.getInstance(document.getElementById('eventoModal'));
+        modal.hide();
+        this.$emit('cerrar');
+
+        // Mostrar notificación de éxito
+        this.mostrarNotificacion({
+            tipo: 'exito',
+            titulo: this.editando ? 'Evento actualizado' : 'Evento creado',
+            mensaje: this.editando 
+                ? 'Tu evento ha sido actualizado correctamente.' 
+                : 'Tu evento ha sido creado exitosamente.'
+        });
+
+    } catch (error) {
+        console.error('Error al guardar evento:', error);
+        this.mostrarNotificacion({
+            tipo: 'error',
+            titulo: 'Error al guardar evento',
+            mensaje: 'No pudimos guardar el evento. Por favor, inténtalo de nuevo.'
+        });
     }
-  },
-  mounted() {
-    this.showModal();
-  }
+},
+
+        // Muestra notificación localmente
+        mostrarNotificacion(noti) {
+            this.notificacion = {
+                mostrar: true,
+                tipo: noti.tipo,
+                titulo: noti.titulo,
+                mensaje: noti.mensaje
+            };
+
+            setTimeout(() => {
+                this.notificacion.mostrar = false;
+            }, 5000);
+        },
+
+        // Preselecciona fecha (opcional)
+        preseleccionarFecha(fecha) {
+            this.evento.date = fecha;
+        },
+
+        // Establece valores cuando se está editando un evento existente
+        establecerValoresEdicion(evento) {
+            this.editando = true;
+            this.evento = {
+                id: evento.id,
+                name: evento.name || '',
+                description: evento.description || '',
+                date: evento.date || '',
+                hour: evento.hour || '',
+                background_color: evento.background_color || '#1b263b'
+            };
+            this.evento.date = evento.date;
+            this.evento.hour = evento.hour;
+
+            // Actualiza el título del modal
+            const modalLabel = document.getElementById('eventoModalLabel');
+            if (modalLabel) {
+                modalLabel.innerText = 'Editar Evento';
+            }
+        },
+
+        // Muestra el modal
+        showModal() {
+            const modalElement = document.getElementById('eventoModal');
+            if (modalElement) {
+                this.modal = new Modal(modalElement);
+                this.modal.show();
+            } else {
+                console.error('El elemento eventoModal no se encontró en el DOM');
+            }
+        }
+    },
+    mounted() {
+        this.showModal();
+    }
 };
 </script>
 

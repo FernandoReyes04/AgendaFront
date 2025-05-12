@@ -2,13 +2,10 @@ import api from './api';
 
 //  Crear un recordatorio
 export const createRecordatorio = async (recordatorio) => {
-  try {
+    console.log('Servicio - Enviando recordatorio:', recordatorio); // ✅ Revisa en consola del navegador
     const response = await api.post('/api/reminder', recordatorio);
+    console.log('Respuesta del backend:', response.data);
     return response.data;
-  } catch (error) {
-    console.error('Error creando recordatorio:', error);
-    throw error;
-  }
 };
 
 //  Obtener todos los recordatorios
