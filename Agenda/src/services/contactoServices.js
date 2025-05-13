@@ -27,16 +27,37 @@ export const createContacto = async (contacto) => {
 //  Obtener todos los contactos
 export const getContactos = async () => {
     try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.id) {
-            throw new Error('Usuario no autenticado');
+        // Obtener y validar usuario
+        const userJson = localStorage.getItem('user');
+        if (!userJson) {
+            console.warn('No hay datos de usuario en localStorage');
+            return [];
         }
-
-        const response = await api.get(`/api/contact?userId=${user.id}`);
-        return response.data;
+        
+        let user;
+        try {
+            user = JSON.parse(userJson);
+        } catch (e) {
+            console.error('Error al parsear datos de usuario:', e);
+            return [];
+        }
+        
+        if (!user || !user.id) {
+            console.warn('Usuario sin ID válido');
+            return [];
+        }
+        
+        // Asegurar que el ID sea un número o string válido
+        const userId = user.id.toString();
+        console.log(`Obteniendo contactos para usuario con ID: ${userId}`);
+        
+        // Realizar la petición al backend
+        const response = await api.get(`/api/contact?userId=${userId}`);
+        return response.data || [];
     } catch (error) {
         console.error('Error obteniendo contactos:', error);
-        throw error;
+        // Devolver array vacío en lugar de lanzar error para evitar que la app se rompa
+        return [];
     }
 };
 

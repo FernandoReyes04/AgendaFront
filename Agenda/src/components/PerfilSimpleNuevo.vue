@@ -1,17 +1,17 @@
 <template>
   <div class="perfil-page">
-    <Header :enPerfil="true" @volver-agenda="$emit('volver')" />
+    <Header :enPerfil="true" @volver-agenda="$emit('volver')" @show-login="irAlLogin" @logout="cerrarSesion" />
     <div class="perfil-contenedor">
       <!-- Encabezado del perfil -->
       <div class="perfil-header">
         <div class="avatar-container">
           <div class="avatar">
-            <span>RS</span>
+            <span>{{ userInitials }}</span>
           </div>
         </div>
         <div class="info-usuario">
-          <h2 class="nombre-usuario">Raul Sosa</h2>
-          <p class="correo-usuario">raul@ejemplo.com</p>
+          <h2 class="nombre-usuario">{{ userName }}</h2>
+          <p class="correo-usuario">{{ userEmail }}</p>
           <div class="estadisticas">
             <div class="stat-item">
               <span class="stat-numero">{{ contactos.length }}</span>
@@ -30,6 +30,9 @@
         <div class="acciones">
           <button class="btn-editar">
             <i class="fas fa-pencil-alt"></i> Editar Perfil
+          </button>
+          <button class="btn-cerrar-sesion" @click="cerrarSesion">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
           </button>
         </div>
       </div>
@@ -118,7 +121,16 @@
                   <div class="fecha-mes">{{ obtenerMes(evento.date) }}</div>
                 </div>
                 <div class="evento-detalles">
-                  <h4>{{ evento.name }}</h4>
+                  <h4>
+                    {{ evento.name }}
+                    <span 
+                      v-if="evento.categoria" 
+                      class="categoria-badge" 
+                      :style="{ backgroundColor: evento.colorCategoria || '#778da9' }"
+                    >
+                      {{ evento.categoria }}
+                    </span>
+                  </h4>
                   <p><i class="fas fa-clock"></i> {{ evento.hour }}</p>
                   <p><i class="fas fa-map-marker-alt"></i> {{ evento.location || 'Sin ubicación' }}</p>
                 </div>
@@ -164,7 +176,16 @@
                   <div class="fecha-mes">{{ obtenerMes(recordatorio.date) }}</div>
                 </div>
                 <div class="recordatorio-detalles">
-                  <h4>{{ recordatorio.name }}</h4>
+                  <h4>
+                    {{ recordatorio.name }}
+                    <span 
+                      v-if="recordatorio.categoria" 
+                      class="categoria-badge" 
+                      :style="{ backgroundColor: recordatorio.colorCategoria || '#415a77' }"
+                    >
+                      {{ recordatorio.categoria }}
+                    </span>
+                  </h4>
                   <p><i class="fas fa-clock"></i> {{ recordatorio.hour }}</p>
                   <p><i class="fas fa-envelope"></i> {{ recordatorio.email }}</p>
                 </div>
@@ -245,10 +266,17 @@ export default {
   data() {
     return {
       seccionActiva: 'contactos',
-      expandedContactoNotes: {},
-      expandedEventoDetails: {},
-      expandedRecordatorioDetails: {}
+      contactosExpandidos: {},
+      eventosExpandidos: {},
+      recordatoriosExpandidos: {},
+      userName: '',
+      userEmail: '',
+      userInitials: ''
     };
+  },
+  
+  created() {
+    this.cargarDatosUsuario();
   },
   methods: {
     cambiarSeccion(seccion) {
@@ -268,24 +296,96 @@ export default {
     },
     // Métodos para las notas desplegables de contactos
     toggleContactoNotes(index) {
-      this.$set(this.expandedContactoNotes, index, !this.expandedContactoNotes[index]);
+      this.$set(this.contactosExpandidos, index, !this.contactosExpandidos[index]);
     },
     isContactoExpanded(index) {
-      return !!this.expandedContactoNotes[index];
+      return !!this.contactosExpandidos[index];
     },
     // Métodos para los detalles desplegables de eventos
     toggleEventoDetails(index) {
-      this.$set(this.expandedEventoDetails, index, !this.expandedEventoDetails[index]);
+      this.$set(this.eventosExpandidos, index, !this.eventosExpandidos[index]);
     },
     isEventoExpanded(index) {
-      return !!this.expandedEventoDetails[index];
+      return !!this.eventosExpandidos[index];
     },
     // Métodos para los detalles desplegables de recordatorios
     toggleRecordatorioDetails(index) {
-      this.$set(this.expandedRecordatorioDetails, index, !this.expandedRecordatorioDetails[index]);
+      this.$set(this.recordatoriosExpandidos, index, !this.recordatoriosExpandidos[index]);
     },
     isRecordatorioExpanded(index) {
-      return !!this.expandedRecordatorioDetails[index];
+      return !!this.recordatoriosExpandidos[index];
+    },
+    
+    // Método para cargar los datos del usuario desde localStorage
+    cargarDatosUsuario() {
+      try {
+        // Verificar si el usuario está realmente autenticado
+        const userLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+        const userData = userLoggedIn ? JSON.parse(localStorage.getItem('user')) : null;
+        
+        if (userData && userLoggedIn) {
+          // Usuario autenticado - mostrar datos reales
+          this.userName = userData.username || 'Usuario';
+          this.userEmail = userData.email || '';
+          
+          // Mostrar el ID del usuario para referencia
+          console.log(`Perfil cargado para usuario con ID: ${userData.id}`);
+          
+          // Generar iniciales a partir del nombre de usuario
+          if (userData.username) {
+            const nameParts = userData.username.split(' ');
+            let initials = '';
+            
+            // Tomar la primera letra de cada parte del nombre (máximo 2)
+            for (let i = 0; i < Math.min(nameParts.length, 2); i++) {
+              if (nameParts[i].length > 0) {
+                initials += nameParts[i][0].toUpperCase();
+              }
+            }
+            
+            // Si solo hay una inicial, usar la primera y última letra del nombre
+            if (initials.length === 1 && userData.username.length > 1) {
+              initials += userData.username[userData.username.length - 1].toUpperCase();
+            }
+            
+            this.userInitials = initials;
+          } else {
+            this.userInitials = 'U';
+          }
+        } else {
+          // Usuario no autenticado - mostrar solo 'Usuario'
+          this.userName = 'Usuario';
+          this.userEmail = '';
+          this.userInitials = 'U';
+        }
+      } catch (error) {
+        console.error('Error al cargar datos de usuario:', error);
+        this.userName = 'Usuario';
+        this.userEmail = '';
+        this.userInitials = 'U';
+      }
+    },
+    
+    // Método para cerrar sesión
+    cerrarSesion() {
+      // Eliminar datos de sesión del localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('userLoggedIn');
+      
+      // Emitir evento para volver a la pantalla de login
+      this.$emit('volver');
+    },
+    
+    // Método para ir al login
+    irAlLogin() {
+      // Eliminar datos de sesión del localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('userLoggedIn');
+      
+      // Emitir evento para volver a la pantalla de login
+      this.$emit('volver');
+      
+      console.log('Redirigiendo al login desde el perfil');
     }
   }
 };
@@ -433,6 +533,27 @@ export default {
 
 .btn-editar:hover {
   background-color: #778da9; /* Silver Lake Blue */
+}
+
+.btn-cerrar-sesion {
+  background-color: #1b263b; /* Oxford Blue */
+  color: #e0e1dd; /* Platinum */
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.btn-cerrar-sesion:hover {
+  background-color: #0d1b2a; /* Rich Black */
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(13, 27, 42, 0.3);
 }
 
 /* Contenido principal */
@@ -782,5 +903,18 @@ export default {
   .acciones {
     margin-top: 15px;
   }
+}
+
+/* Estilos para etiquetas de categoría */
+.categoria-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-left: 8px;
+  vertical-align: middle;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
 }
 </style>

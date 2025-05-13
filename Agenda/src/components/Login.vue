@@ -195,8 +195,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #e0e1dd; /* Platinum de la paleta */
+    min-height: 100vh;
   }
   
   .login-box {
@@ -211,6 +210,8 @@
   h2 {
     text-align: center;
     margin-bottom: 20px;
+    color: #0d1b2a !important; /* Rich Black - el color más oscuro de la paleta de NotiQ */
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.15) !important;
   }
   
   .input-group {
@@ -324,41 +325,78 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(13, 27, 42, 0.75); /* Rich Black más oscuro */
+    backdrop-filter: blur(3px); /* Efecto de desenfoque para el fondo */
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
   .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 320px;
+    box-shadow: 0 10px 25px rgba(13, 27, 42, 0.2);
+    border-left: 4px solid #415a77; /* Yinmn Blue */
+    animation: slideUp 0.3s ease;
+    position: relative;
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .modal-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0d1b2a !important; /* Rich Black */
+    font-size: 28px !important;
   }
   
   .create-button {
-    background-color: var(--success-color);
-    color: var(--neutral-100);
+    background-color: #1b263b; /* Oxford Blue */
+    color: #e0e1dd; /* Platinum */
     transition: all 0.3s ease;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+    margin-bottom: 10px;
   }
   
   .create-button:hover {
-    background-color: var(--accent-dark);
+    background-color: #415a77; /* Yinmn Blue */
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 8px rgba(13, 27, 42, 0.15);
   }
   
   .cancel-button {
-    background-color: var(--error-color);
-    color: var(--neutral-100);
+    background-color: #778da9; /* Silver Lake Blue */
+    color: #e0e1dd; /* Platinum */
     transition: all 0.3s ease;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
   }
   
   .cancel-button:hover {
-    background-color: #d32f2f;
+    background-color: #98a3b7; /* Silver Lake Blue más claro */
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 8px rgba(13, 27, 42, 0.15);
   }
   
   .password-strength-bar {

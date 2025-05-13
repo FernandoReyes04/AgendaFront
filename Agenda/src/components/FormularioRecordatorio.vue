@@ -23,6 +23,26 @@
             </div>
           </div>
           <div class="mb-3">
+            <label for="categoria" class="form-label">Categoría</label>
+            <div class="categoria-selector">
+              <select 
+                id="categoria" 
+                v-model="recordatorio.categoria" 
+                class="form-control custom-input"
+                @change="actualizarColorCategoria"
+              >
+                <option v-for="cat in categorias" :key="cat.valor" :value="cat.valor">{{ cat.nombre }}</option>
+              </select>
+              <i :class="obtenerIconoCategoria" class="categoria-icon"></i>
+            </div>
+            <div class="categoria-preview mt-2">
+              <div class="categoria-color-preview" :style="{ backgroundColor: recordatorio.colorCategoria }"></div>
+              <div class="categoria-badge" :style="{ backgroundColor: recordatorio.colorCategoria }">
+                <i :class="obtenerIconoCategoria"></i> {{ obtenerNombreCategoria }}
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
             <label for="descripcion" class="form-label">Descripción</label>
             <textarea 
               id="descripcion" 
@@ -97,8 +117,19 @@ export default {
         description: '',
         email: '',
         date: '',
-        hour: ''
+        hour: '',
+        categoria: 'general',
+        colorCategoria: '#415a77' // Yinmn Blue por defecto para recordatorios
       },
+      categorias: [
+        { nombre: 'General', valor: 'general', color: '#778da9', icono: 'fas fa-bookmark' }, // Silver Lake Blue
+        { nombre: 'Personal', valor: 'personal', color: '#0d1b2a', icono: 'fas fa-user' }, // Rich Black
+        { nombre: 'Trabajo', valor: 'trabajo', color: '#1b263b', icono: 'fas fa-briefcase' }, // Oxford Blue
+        { nombre: 'Urgente', valor: 'urgente', color: '#E63946', icono: 'fas fa-exclamation-circle' }, // Rojo para urgentes
+        { nombre: 'Familia', valor: 'familia', color: '#415a77', icono: 'fas fa-home' }, // Yinmn Blue
+        { nombre: 'Salud', valor: 'salud', color: '#90e0ef', icono: 'fas fa-heartbeat' }, // Non-Photo Blue
+        { nombre: 'Finanzas', valor: 'finanzas', color: '#03045e', icono: 'fas fa-money-bill-wave' } // Navy Blue
+      ],
       nombreError: '',
       emailError: '',
       fechaError: '',
@@ -107,10 +138,28 @@ export default {
       modal: null
     };
   },
+  computed: {
+    obtenerIconoCategoria() {
+      const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.recordatorio.categoria);
+      return categoriaSeleccionada ? categoriaSeleccionada.icono : 'fas fa-bookmark';
+    },
+    obtenerNombreCategoria() {
+      const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.recordatorio.categoria);
+      return categoriaSeleccionada ? categoriaSeleccionada.nombre : 'General';
+    }
+  },
   methods: {
     showModal() {
       this.modal = new Modal(document.getElementById('recordatorioModal'));
       this.modal.show();
+    },
+    
+    // Actualiza el color según la categoría seleccionada
+    actualizarColorCategoria() {
+      const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.recordatorio.categoria);
+      if (categoriaSeleccionada) {
+        this.recordatorio.colorCategoria = categoriaSeleccionada.color;
+      }
     },
     
     validarNombre() {
@@ -223,7 +272,9 @@ export default {
                     date: this.recordatorio.date,
                     hour: this.recordatorio.hour,
                     email: this.recordatorio.email,
-                    userId: user.id // ✅ Enviando el ID del usuario logueado
+                    userId: user.id, // ✅ Enviando el ID del usuario logueado
+                    categoria: this.recordatorio.categoria || 'general',
+                    colorCategoria: this.recordatorio.colorCategoria || '#415a77'
                 };
 
                 await createRecordatorio(recordatorioParaGuardar); // Llamada al backend
@@ -311,14 +362,33 @@ export default {
       }
       
       // Asignamos los valores del recordatorio a editar
+      
+      // Determinar categoría y color basado en el recordatorio existente
+      let categoria = 'general';
+      let colorCategoria = '#415a77';
+      
+      // Si el recordatorio ya viene con categoría (procesado por el servicio)
+      if (recordatorio.categoria) {
+        categoria = recordatorio.categoria;
+        colorCategoria = recordatorio.colorCategoria || this.obtenerColorPorCategoria(categoria);
+      }
+      
       this.recordatorio = {
         id: recordatorio.id,
         name: recordatorio.name || '',
         description: recordatorio.description || '',
         date: recordatorio.date || '',
         hour: recordatorio.hour || '',
-        email: recordatorio.email || ''
+        email: recordatorio.email || '',
+        categoria: categoria,
+        colorCategoria: colorCategoria
       };
+    },
+    
+    // Método auxiliar para obtener color por nombre de categoría
+    obtenerColorPorCategoria(nombreCategoria) {
+      const categoriaEncontrada = this.categorias.find(cat => cat.valor === nombreCategoria);
+      return categoriaEncontrada ? categoriaEncontrada.color : '#415a77';
     }
   },
   mounted() {
@@ -472,18 +542,13 @@ export default {
 }
 
 .custom-btn-save {
-  background-color: var(--accent-color);
+  background-color: var(--secondary-color);
   color: white;
   padding: 8px 18px;
   border-radius: 8px;
   border: none;
   font-weight: 500;
   transition: all 0.3s ease;
-}
-
-.custom-btn-save:hover {
-  background-color: var(--accent-dark);
-  transform: translateY(-1px);
 }
 
 .custom-btn-cancel {
@@ -499,5 +564,79 @@ export default {
 
 .custom-btn-cancel:hover {
   background-color: var(--neutral-300);
+}
+
+/* Estilos para vista previa de categorías */
+.categoria-color-preview {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  margin-top: 5px;
+  transition: all 0.3s ease;
+}
+
+/* Estilos para etiquetas de categoría */
+.categoria-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+
+.custom-btn-save:hover {
+  background-color: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+/* Estilos para selector de categorías mejorado */
+.categoria-selector {
+  position: relative;
+}
+
+.categoria-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1b263b;
+  pointer-events: none;
+}
+
+.categoria-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Estilos para vista previa de categorías */
+.categoria-color-preview {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para etiquetas de categoría */
+.categoria-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: fit-content;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.categoria-badge i {
+  margin-right: 5px;
 }
 </style>

@@ -23,6 +23,26 @@
             </div>
           </div>
           <div class="mb-3">
+            <label for="categoria" class="form-label">Categoría</label>
+            <div class="categoria-selector">
+              <select 
+                id="categoria" 
+                v-model="evento.categoria" 
+                class="form-control custom-input"
+                @change="actualizarColorCategoria"
+              >
+                <option v-for="cat in categorias" :key="cat.valor" :value="cat.valor">{{ cat.nombre }}</option>
+              </select>
+              <i :class="obtenerIconoCategoria" class="categoria-icon"></i>
+            </div>
+            <div class="categoria-preview mt-2">
+              <div class="categoria-color-preview" :style="{ backgroundColor: evento.colorCategoria }"></div>
+              <div class="categoria-badge" :style="{ backgroundColor: evento.colorCategoria }">
+                <i :class="obtenerIconoCategoria"></i> {{ obtenerNombreCategoria }}
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
             <label for="descripcion" class="form-label">Descripción</label>
             <textarea 
               id="descripcion" 
@@ -82,8 +102,20 @@ export default {
                 description: '',
                 date: '',
                 hour: '',
-                background_color: '#1b263b'
+                background_color: '#1b263b',
+                categoria: 'general',
+                colorCategoria: '#778da9' // Silver Lake Blue por defecto
             },
+            categorias: [
+                { nombre: 'General', valor: 'general', color: '#778da9', icono: 'fas fa-bookmark' }, // Silver Lake Blue
+                { nombre: 'Trabajo', valor: 'trabajo', color: '#1b263b', icono: 'fas fa-briefcase' }, // Oxford Blue
+                { nombre: 'Personal', valor: 'personal', color: '#0d1b2a', icono: 'fas fa-user' }, // Rich Black
+                { nombre: 'Familia', valor: 'familia', color: '#415a77', icono: 'fas fa-home' }, // Yinmn Blue
+                { nombre: 'Escuela', valor: 'escuela', color: '#e0e1dd', icono: 'fas fa-graduation-cap' }, // Platinum
+                { nombre: 'Salud', valor: 'salud', color: '#90e0ef', icono: 'fas fa-heartbeat' }, // Non-Photo Blue
+                { nombre: 'Finanzas', valor: 'finanzas', color: '#03045e', icono: 'fas fa-money-bill-wave' }, // Navy Blue
+                { nombre: 'Social', valor: 'social', color: '#caf0f8', icono: 'fas fa-users' } // Light Cyan
+            ],
             nombreError: '',
             fechaError: '',
             horaError: '',
@@ -96,6 +128,16 @@ export default {
                 mensaje: ''
             }
         };
+    },
+    computed: {
+        obtenerIconoCategoria() {
+            const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.evento.categoria);
+            return categoriaSeleccionada ? categoriaSeleccionada.icono : 'fas fa-bookmark';
+        },
+        obtenerNombreCategoria() {
+            const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.evento.categoria);
+            return categoriaSeleccionada ? categoriaSeleccionada.nombre : 'General';
+        }
     },
     methods: {
         // Validaciones de formulario
@@ -138,6 +180,14 @@ export default {
             this.validarHora();
             return !this.nombreError && !this.fechaError && !this.horaError;
         },
+        
+        // Actualiza el color cuando se selecciona una categoría
+        actualizarColorCategoria() {
+            const categoriaSeleccionada = this.categorias.find(cat => cat.valor === this.evento.categoria);
+            if (categoriaSeleccionada) {
+                this.evento.colorCategoria = categoriaSeleccionada.color;
+            }
+        },
 
         // ✅ Método principal para guardar o actualizar evento
         async guardarEvento() {
@@ -159,7 +209,9 @@ const eventoParaGuardar = {
     date: this.evento.date,
     hour: this.evento.hour,
     background_color: this.evento.background_color,
-    userId: user.id // ✅ Este es el campo clave
+    userId: user.id, // ✅ Este es el campo clave
+    categoria: this.evento.categoria || 'general',
+    colorCategoria: this.evento.colorCategoria || '#778da9'
 };
 
 console.log('Enviando evento al backend:', eventoParaGuardar); // ❗ Revisa si aparece userId aquí
@@ -219,25 +271,45 @@ console.log('Enviando evento al backend:', eventoParaGuardar); // ❗ Revisa si 
 
         // Establece valores cuando se está editando un evento existente
         establecerValoresEdicion(evento) {
+            if (!evento) return;
+            
             this.editando = true;
+            
+            // Determinar categoría y color basado en el evento existente
+            let categoria = 'general';
+            let colorCategoria = '#778da9';
+            
+            // Si el evento ya viene con categoría (procesado por el servicio)
+            if (evento.categoria) {
+                categoria = evento.categoria;
+                colorCategoria = evento.colorCategoria || this.obtenerColorPorCategoria(categoria);
+            }
+            
             this.evento = {
                 id: evento.id,
                 name: evento.name || '',
                 description: evento.description || '',
                 date: evento.date || '',
                 hour: evento.hour || '',
-                background_color: evento.background_color || '#1b263b'
+                background_color: evento.background_color || '#1b263b',
+                created_at: evento.created_at || '',
+                updated_at: evento.updated_at || '',
+                userId: evento.userId || null,
+                categoria: categoria,
+                colorCategoria: colorCategoria
             };
-            this.evento.date = evento.date;
-            this.evento.hour = evento.hour;
-
-            // Actualiza el título del modal
-            const modalLabel = document.getElementById('eventoModalLabel');
-            if (modalLabel) {
-                modalLabel.innerText = 'Editar Evento';
-            }
+            
+            // Cambiar título del modal
+            const modalTitle = document.getElementById('eventoModalLabel');
+            if (modalTitle) modalTitle.textContent = 'Editar Evento';
         },
-
+        
+        // Método auxiliar para obtener color por nombre de categoría
+        obtenerColorPorCategoria(nombreCategoria) {
+            const categoriaEncontrada = this.categorias.find(cat => cat.valor === nombreCategoria);
+            return categoriaEncontrada ? categoriaEncontrada.color : '#778da9';
+        },
+        
         // Muestra el modal
         showModal() {
             const modalElement = document.getElementById('eventoModal');
@@ -426,5 +498,53 @@ console.log('Enviando evento al backend:', eventoParaGuardar); // ❗ Revisa si 
 
 .custom-btn-cancel:hover {
   background-color: var(--neutral-300);
+}
+
+/* Estilos para selector de categorías mejorado */
+.categoria-selector {
+  position: relative;
+}
+
+.categoria-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1b263b;
+  pointer-events: none;
+}
+
+.categoria-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Estilos para vista previa de categorías */
+.categoria-color-preview {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Estilos para etiquetas de categoría */
+.categoria-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: fit-content;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.categoria-badge i {
+  margin-right: 5px;
 }
 </style>

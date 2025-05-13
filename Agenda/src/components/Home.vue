@@ -1,5 +1,5 @@
 <template>
-  <div class="home-container">
+  <div :class="['home-container', {'login-view': !isLoggedIn}]">
     <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
     <PerfilSimpleNuevo 
       v-else-if="mostrarPerfil" 
@@ -12,8 +12,14 @@
       @eliminar-recordatorio="eliminarRecordatorio"
     />
     <div v-else class="main-content">
-      <Header @show-login="showLogin" />
-      <Header :enPerfil="mostrarPerfil" @logout="handleLogout" />
+      <Header 
+        :enPerfil="mostrarPerfil" 
+        @show-login="showLogin" 
+        @logout="handleLogout"
+        @ir-a-perfil="mostrarPerfilUsuario"
+        @cambio-usuario="manejarCambioUsuario"
+        @volver-agenda="cerrarPerfilUsuario"
+      />
       
       <div class="app-container">
         <!-- Barra lateral con botones -->
@@ -239,22 +245,104 @@ export default {
   },
   methods: {
     handleLoginSuccess() {
-        this.isLoggedIn = true;
-        localStorage.setItem('userLoggedIn', 'true');
-        this.cargarComponentes(); // ✅ Ahora sí existe
+        try {
+            // Marcar como autenticado
+            this.isLoggedIn = true;
+            localStorage.setItem('userLoggedIn', 'true');
+            
+            // Obtener datos del usuario que inició sesión
+            const userData = JSON.parse(localStorage.getItem('user'));
+            
+            if (userData && userData.id) {
+                console.log(`Usuario autenticado con ID: ${userData.id}`); 
+            }
+            
+            // Cargar todos los datos asociados a este usuario
+            this.cargarComponentes();
+            
+            // Mostrar notificación de bienvenida
+            this.mostrarNotificacion({
+                tipo: 'exito',
+                titulo: 'Sesión iniciada',
+                mensaje: `Bienvenido, ${userData ? userData.username : 'Usuario'}!`,
+                duracion: 3000
+            });
+        } catch (error) {
+            console.error('Error al manejar inicio de sesión:', error);
+        }
     },
     async cargarComponentes() {
         try {
-            this.contactos = await getContactos(); // ✅ Servicios deben estar importados
-            this.eventos = await getEventos();
-            this.recordatorios = await getRecordatorios();
+            // Verificar que el usuario esté autenticado y obtener sus datos
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.id) {
+                console.warn('No hay usuario autenticado o falta ID');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const userId = userData.id;
+            console.log(`Cargando datos para el usuario con ID: ${userId}`);
+            
+            // Cargar todos los componentes filtrados por el ID del usuario
+            const [contactosResponse, eventosResponse, recordatoriosResponse] = await Promise.all([
+                getContactos(), // Estos servicios ya filtran por userId internamente
+                getEventos(),
+                getRecordatorios()
+            ]);
+            
+            // Actualizar el estado con los datos recibidos
+            this.contactos = contactosResponse;
+            this.eventos = eventosResponse;
+            this.recordatorios = recordatoriosResponse;
+            
+            console.log(`Datos cargados para usuario ${userData.username}:`, {
+                contactos: this.contactos.length,
+                eventos: this.eventos.length,
+                recordatorios: this.recordatorios.length
+            });
         } catch (error) {
             console.error('Error cargando componentes:', error);
+            this.mostrarNotificacion({
+                tipo: 'error',
+                titulo: 'Error de carga',
+                mensaje: 'No se pudieron cargar tus datos. Por favor, intenta nuevamente.',
+                duracion: 5000
+            });
         }
     },
     showLogin() {
-      this.isLoggedIn = false;
+      // Eliminar datos de autenticación
+      localStorage.removeItem('user');
       localStorage.removeItem('userLoggedIn');
+      
+      // Actualizar estado local
+      this.isLoggedIn = false;
+      this.mostrarPerfil = false; // Asegurarse de que no se muestre el perfil
+      
+      // Mostrar notificación
+      this.mostrarNotificacion({
+        tipo: 'info',
+        titulo: 'Iniciar sesión',
+        mensaje: 'Por favor, inicia sesión para continuar'
+      });
+      
+      console.log('Mostrando pantalla de login');
+    },
+    handleLogout() {
+      // Eliminar datos de autenticación
+      localStorage.removeItem('user');
+      localStorage.removeItem('userLoggedIn');
+      
+      // Actualizar estado local
+      this.isLoggedIn = false;
+      
+      // Mostrar notificación
+      this.mostrarNotificacion({
+        tipo: 'exito',
+        titulo: 'Sesión cerrada',
+        mensaje: 'Has cerrado sesión correctamente'
+      });
     },
     mostrarFormularioContactoModal() {
       // Primero limpiamos cualquier residuo de modal anterior
@@ -643,10 +731,26 @@ export default {
     },
     cerrarPerfilUsuario() {
       this.mostrarPerfil = false;
-      this.limpiarResidualModal();
+    },
+
+    // Método para manejar cambios de usuario y recargar datos específicos
+    manejarCambioUsuario({ autenticado, userId, username }) {
+      console.log(`Evento de cambio de usuario detectado: Usuario ${username} (ID: ${userId}), autenticado: ${autenticado}`);
+      
+      // Si el usuario está autenticado, cargar sus datos
+      if (autenticado && userId) {
+        this.mostrarNotificacion({
+          tipo: 'info',
+          titulo: 'Cargando datos',
+          mensaje: `Actualizando información para ${username}`,
+          duracion: 2000
+        });
+        
+        // Recargar todos los datos asociados a este usuario
+        this.cargarComponentes();
+      }
     },
     
-    //  limpiar residuales de modales
     // Métodos para el sistema de notificaciones
     mostrarNotificacion({ tipo = 'exito', titulo = '', mensaje = '', duracion = 5000 }) {
       this.notificacion = {
@@ -711,6 +815,43 @@ export default {
   min-height: 100vh;
   width: 100%;
   background-color: #e0e1dd; /* Platinum de la paleta de NotiQ */
+}
+
+/* Estilo específico cuando se muestra la vista de login - fondo elegante con la paleta de NotiQ */
+.login-view {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 25%, #415a77 70%, #778da9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Elemento decorativo 1 - círculo difuminado */
+.login-view::before {
+  content: '';
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  top: -10vw;
+  right: -10vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 141, 169, 0.4) 0%, rgba(120, 141, 169, 0) 70%);
+  z-index: -2; /* Valor negativo para estar detrás del contenido */
+  pointer-events: none; /* Permite que los clics pasen a través */
+}
+
+/* Elemento decorativo 2 - patrón de líneas sutiles */
+.login-view::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(0deg, rgba(224, 225, 221, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(224, 225, 221, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center center;
+  z-index: -1; /* Valor negativo para estar detrás del contenido */
+  pointer-events: none; /* Permite que los clics pasen a través */
 }
 
 .main-content {
