@@ -16,10 +16,6 @@
           <input type="password" id="password" v-model="password" placeholder="Contraseña">
         </div>
         <button class="login-button" @click="login">Ingresar</button>
-        <button class="google-login-button" @click="loginWithGoogle">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/640px-Google_Chrome_icon_%28February_2022%29.svg.png" alt="Google Chrome logo" class="google-icon">
-          <span>Iniciar con Google</span>
-        </button>
         <button class="create-user-button" @click="mostrarModalCrearUsuario">Crear Usuario</button>
         <button class="skip-login-button" @click="skipLogin">Continuar sin iniciar sesión</button>
       </div>
